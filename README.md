@@ -10,6 +10,12 @@ This is a simple ball game written in Typescript using Threlte.
 - [x] Improve menu
 - [x] Add time keeping and local highscores
 
+- add undo button to editor
+
+- move camera in editor
+
+- capture mouse in game
+
 - show "new highscore" when you get a new highscore
 
 - Add more levels

@@ -2,16 +2,14 @@
 	import Glass from '$lib/components/Glass.svelte';
 	import { page } from '$app/stores';
 	import {
-		canEdit,
+	canEdit,
 		currentLevel,
 		customLevels,
-		editMode,
 		firstTime,
 		levels,
-		platforms,
 		playLevel,
+		playingCustomLevel,
 		playingTime,
-		selectedPlatform
 	} from './gamestate';
 
 	import { pushState, replaceState } from '$app/navigation';
@@ -30,7 +28,7 @@
 	}
 </script>
 
-{#if ($page.state.gameState != 'edit' && $page.state.gameState != 'playing') || $playingTime < 0}
+{#if ($page.state.gameState != 'edit' && $page.state.gameState != 'playing') || $playingTime < 0 && !$canEdit}
 	<div
 		class="fixed inset-0 w-screen h-screen z-10 flex flex-col items-center justify-center px-2 overflow-scroll text-gray-900"
 	>
@@ -62,7 +60,7 @@
 			</Glass>
 		{:else if $page.state.gameState == 'customLevels'}
 			<Glass backButton={true} class="w-full max-w-xl px-5 sm:px-10 relative">
-				<Levels levels={$customLevels} addNew={true} />
+				<Levels levels={$customLevels} customLevels={true} />
 			</Glass>
 		{:else if $page.state.gameState == 'editHelp'}
 			<Glass backButton={true} class="w-full max-w-xl px-5 sm:px-10 relative">
@@ -143,12 +141,18 @@
 					>
 					<Button
 						onClick={() => {
-							replaceState('', {
-								gameState: 'levels'
-							});
+							if($playingCustomLevel) {
+								replaceState('', {
+									gameState: 'customLevels'
+								});
+							} else {
+								replaceState('', {
+									gameState: 'levels'
+								});
+							}
 						}}>back to levels</Button
 					>
-					{#if $currentLevel < levels.length - 1}
+					{#if (!$playingCustomLevel ? $currentLevel < levels.length - 1 : $currentLevel < $customLevels.length - 1)}
 						<Button
 							onClick={() => {
 								playLevel($currentLevel + 1);
@@ -165,11 +169,12 @@
 	</div>
 {/if}
 
-{#if $page.state.gameState == 'playing' && $playingTime > 0}
+{#if $page.state.gameState == 'playing' && $playingTime > 0 && !$canEdit}
 	<div class="fixed top-1 right-2 text-xl font-semibold tracking-tight text-center rounded-md">
 		{$playingTime.toFixed(1)}
 	</div>
 {/if}
+
 <!-- {#if $state == 'won'}
 					{#if $currentLevel < levels.length - 1}
 						<button

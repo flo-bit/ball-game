@@ -6,9 +6,9 @@
 
 	export let level: Level;
 
-	export let isNew = false;
+	export let highscore: number | undefined = undefined;
 
-	export let index = 0;
+	export let showHighscore = true;
 </script>
 
 <div class="group relative">
@@ -29,9 +29,9 @@
 			{level.name}
 		</button>
 	</h3>
-	{#if !isNew}
-		{#if $highscores[index]}
-			<p class="mt-1 text-xs text-gray-700">Highscore: {$highscores[index].toFixed(2)} s</p>
+	{#if showHighscore}
+		{#if highscore}
+			<p class="mt-1 text-xs text-gray-700">Highscore: {highscore.toFixed(2)} s</p>
 		{:else}
 			<p class="mt-1 text-xs text-gray-700">No highscore</p>
 		{/if}

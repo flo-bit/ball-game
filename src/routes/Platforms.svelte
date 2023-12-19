@@ -7,10 +7,13 @@
 	import {
 		canEdit,
 		currentLevel,
+		customLevels,
 		editMode,
 		editSpace,
 		levels,
 		platforms,
+		playing,
+		playingCustomLevel,
 		selectedPlatform,
 		startPlatforms
 	} from './gamestate';
@@ -61,7 +64,10 @@
 				break;
 
 			case 'p':
-				$page.state.gameState = 'playing';
+				$playing = true;
+				pushState('', {
+					gameState: 'playing'
+				});
 				break;
 
 			case '+':
@@ -100,6 +106,17 @@
 			case 'x':
 				$platforms = startPlatforms;
 				break;
+			case 'n':
+				// add to custom levels
+				$customLevels = [
+					...$customLevels,
+					{
+						name: 'Level ' + ($customLevels.length + 1),
+						platforms: $platforms
+					}
+				];
+				console.log($customLevels);
+				break;
 
 			default:
 				break;
@@ -118,13 +135,25 @@
 		/>
 	{/each}
 {:else if $currentLevel >= 0}
-	{#each levels[$currentLevel].platforms as platform, i (platform)}
-		<Platform
-			bind:scale={platform.scale}
-			bind:position={platform.position}
-			bind:rotation={platform.rotation}
-			index={i}
-			isWin={platform.isWin}
-		/>
-	{/each}
+	{#if $playingCustomLevel}
+		{#each $customLevels[$currentLevel].platforms as platform, i (platform)}
+			<Platform
+				bind:scale={platform.scale}
+				bind:position={platform.position}
+				bind:rotation={platform.rotation}
+				index={i}
+				isWin={platform.isWin}
+			/>
+		{/each}
+	{:else}
+		{#each levels[$currentLevel].platforms as platform, i (platform)}
+			<Platform
+				bind:scale={platform.scale}
+				bind:position={platform.position}
+				bind:rotation={platform.rotation}
+				index={i}
+				isWin={platform.isWin}
+			/>
+		{/each}
+	{/if}
 {/if}

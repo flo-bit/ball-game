@@ -11,7 +11,13 @@
 		playing,
 		playingTime,
 		highscores,
-		playLevel
+		playLevel,
+		canEdit,
+		customHighscores,
+		playingCustomLevel,
+
+		playerPosition
+
 	} from './gamestate';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -114,6 +120,7 @@
 		// when body position changes update camera position
 		const pos = rigidBody.translation();
 		position = [pos.x, pos.y, pos.z];
+		$playerPosition = position;
 
 		// check if lost (fallen off)
 		if (pos.y < -10) {
@@ -140,7 +147,7 @@
 		}
 	}
 
-	$: isPlaying = $page.state.gameState == 'playing' && $playing && $playingTime > 0;
+	$: isPlaying = $page.state.gameState == 'playing' && $playing && ($playingTime > 0 || $canEdit);
 
 	function onKeyDown(e: KeyboardEvent) {
 		if (!isPlaying) return;
@@ -162,10 +169,12 @@
 				jump();
 				break;
 
-			// case 'k':
-			// 	if ($canEdit) {
-			// 		$state = 'edit';
-			// 	}
+			case 'k':
+				if ($canEdit) {
+					replaceState('', {
+						gameState: 'edit'
+					});
+				}
 			default:
 				break;
 		}
@@ -196,11 +205,22 @@
 	}
 
 	function levelDone() {
+		if ($canEdit) {
+			die();
+			return;
+		}
+
 		let time = $playingTime;
 
 		// check if new best time
-		if (!$highscores[$currentLevel] || $highscores[$currentLevel] > time) {
-			$highscores[$currentLevel] = time;
+		if ($playingCustomLevel) {
+			if (!$customHighscores[$currentLevel] || $customHighscores[$currentLevel] > time) {
+				$customHighscores[$currentLevel] = time;
+			}
+		} else {
+			if (!$highscores[$currentLevel] || $highscores[$currentLevel] > time) {
+				$highscores[$currentLevel] = time;
+			}
 		}
 
 		replaceState('', {

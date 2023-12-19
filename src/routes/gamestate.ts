@@ -14,6 +14,8 @@ export const editSpace: Writable<'world' | 'local'> = writable('world');
 
 export const highscores: Writable<number[]> = localStorageStore('highscores', []);
 
+export const customHighscores: Writable<number[]> = localStorageStore('customHighscores', []);
+
 export const showDebug = localStorageStore('debug', false);
 
 export const firstTime = localStorageStore('firstTime', true);
@@ -201,7 +203,10 @@ export const levels: Level[] = [
 	}
 ];
 
-export const playLevel = (level: number) => {
+export const playingCustomLevel: Writable<boolean> = writable(false);
+
+export const playLevel = (level: number, custom: boolean | undefined = undefined) => {
+	if (custom != undefined) playingCustomLevel.set(custom);
 	currentLevel.set(-1);
 	playing.set(true);
 	playingTime.set(-2.99);
@@ -214,3 +219,5 @@ export const playLevel = (level: number) => {
 		gameState: 'playing'
 	});
 };
+
+export const playerPosition: Writable<[number, number, number]> = writable([0, 0, 0]);

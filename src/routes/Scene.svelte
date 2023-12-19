@@ -9,14 +9,14 @@
 	import Player from './Player.svelte';
 	import Platforms from './Platforms.svelte';
 
-	import { currentLevel, showDebug } from './gamestate';
+	import { currentLevel, playerPosition, showDebug } from './gamestate';
 
 	import { onMount } from 'svelte';
 	import CustomRenderer from './CustomRenderer.svelte';
 
 	import Stats from 'stats.js';
 	import { page } from '$app/stores';
-	import { CameraHelper, DirectionalLight, Vector2 } from 'three';
+	import { CameraHelper, DirectionalLight, Object3D, Vector2 } from 'three';
 
 	let stats: Stats;
 	onMount(() => {
@@ -39,6 +39,8 @@
 		let shadowHelper = new CameraHelper(dirLight.shadow.camera);
 		scene.add(shadowHelper);
 	}
+
+	let target : Object3D;
 </script>
 
 {#if $page.state.gameState !== 'edit'}
@@ -65,10 +67,22 @@
 
 <Platforms />
 
+<T.Object3D bind:ref={target} position={$playerPosition}>
+</T.Object3D>
+
+{#if target}
 <T.DirectionalLight
 	ref={dirLight}
-	position={[0, 10, -10]}
+	target={target}
+	position={[$playerPosition[0], $playerPosition[1] + 10, $playerPosition[2] - 10]}
 	intensity={1.0}
 	castShadow
-	shadow.shadowMap={[1024, 1024]}
+	shadow.mapSize.width={1024 * 4}
+	shadow.mapSize.height={1024 * 4}
+
+	shadow.camera.left={-20}
+	shadow.camera.right={20}
+	shadow.camera.top={20}
+	shadow.camera.bottom={-20}
 />
+{/if}
