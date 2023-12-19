@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.my-blur {
+	-webkit-backdrop-filter: blur(4px);
+}
