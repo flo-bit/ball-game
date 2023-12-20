@@ -42,7 +42,30 @@ export const customLevels: Writable<Level[]> = localStorageStore('customLevels',
 
 export const levels: Level[] = [
 	{
-		name: 'Level 1',
+		image: '/images/beginning.png',
+		name: 'beginning',
+		platforms: [
+			{
+				scale: [4, 0.5, 11.39683540432216],
+				position: [0, 0, -7.164888403988531],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{
+				scale: [4, 0.5, 4],
+				position: [14.710153919714521, 0, -30.60983074984392],
+				rotation: [0, 0, 0, 'XYZ'],
+				isWin: true
+			},
+			{
+				scale: [4, 0.5, 11.39683540432216],
+				position: [7.2380011644867, 0, -22.53609739469713],
+				rotation: [3.141592653589793, -1.5583317625112427, 3.141592653589793, 'XYZ']
+			}
+		]
+	},
+	{
+		image: '/images/jumps.png',
+		name: 'jumps',
 		platforms: [
 			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0, 'XYZ'], isWin: true },
 			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
@@ -50,9 +73,9 @@ export const levels: Level[] = [
 			{ position: [0, 0, -25.96303713055015], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] }
 		]
 	},
-
 	{
-		name: 'Level 2',
+		image: '/images/more_jumps.png',
+		name: 'more jumps',
 		platforms: [
 			{
 				scale: [4, 0.5, 4],
@@ -75,7 +98,49 @@ export const levels: Level[] = [
 	},
 
 	{
-		name: 'Level 3',
+		image: '/images/balance.png',
+		name: 'balance',
+		platforms: [
+			{ scale: [4, 0.5, 4], position: [0, 0, 0], rotation: [0, 0, 0, 'XYZ'] },
+			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0, 'XYZ'], isWin: true },
+			{
+				scale: [0.3273853771319995, 0.5, 14.882666399413333],
+				position: [0, -0.1985622847682409, -20.149337227863658],
+				rotation: [0, 0, 0, 'XYZ']
+			}
+		]
+	},
+	{
+		image: '/images/up_and_down.png',
+		name: 'up and down',
+		platforms: [
+			{ scale: [4, 0.5, 4], position: [0, 0, 0], rotation: [0, 0, 0, 'XYZ'] },
+			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0], isWin: true },
+			{
+				scale: [4, 0.5, 4],
+				position: [0, 1.5129388147544773, -7.321495921119439],
+				rotation: [0.420885338288005, 0, 0, 'XYZ']
+			},
+			{
+				scale: [4, 0.5, 4],
+				position: [0, 1.5129388147544773, -21.487362129957358],
+				rotation: [0.420885338288005, 0, 0, 'XYZ']
+			},
+			{
+				scale: [4, 0.5, 4],
+				position: [0, 1.5129388147544773, -14.345030844794827],
+				rotation: [-0.3895030344166943, 0, 0, 'XYZ']
+			},
+			{
+				scale: [4, 0.5, 4],
+				position: [0, 1.5129388147544773, -32.250478838897635],
+				rotation: [-0.3895030344166943, 0, 0, 'XYZ']
+			}
+		]
+	},
+	{
+		image: '/images/stairs.png',
+		name: 'stairs',
 		platforms: [
 			{
 				scale: [4, 0.5, 4],
@@ -132,72 +197,6 @@ export const levels: Level[] = [
 				position: [-5.934590048449504, 9.895648527130568, 0.6952600769091863],
 				scale: [1.5574277865946127, 0.5, 1.4109562166075647],
 				rotation: [0, 0, 0, 'XYZ']
-			}
-		]
-	},
-	{
-		name: 'Level 2',
-		platforms: [
-			{
-				scale: [4, 0.5, 4],
-				position: [0, 0, -40],
-				rotation: [0, 0, 0.29790196078633, 'XYZ'],
-				isWin: true
-			},
-			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
-			{
-				position: [0, 0, -13.031173638120949],
-				scale: [4, 0.5, 4],
-				rotation: [0, 0, 0.35670475824945647, 'XYZ']
-			},
-			{
-				position: [0, 0, -25.96303713055015],
-				scale: [4, 0.5, 4],
-				rotation: [0, 0, -0.5896905195522663, 'XYZ']
-			}
-		]
-	},
-	{
-		name: 'Level 2',
-		platforms: [
-			{
-				scale: [4, 0.5, 4],
-				position: [0, 0, -40],
-				rotation: [0, 0, 0.29790196078633, 'XYZ'],
-				isWin: true
-			},
-			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
-			{
-				position: [0, 0, -13.031173638120949],
-				scale: [4, 0.5, 4],
-				rotation: [0, 0, 0.35670475824945647, 'XYZ']
-			},
-			{
-				position: [0, 0, -25.96303713055015],
-				scale: [4, 0.5, 4],
-				rotation: [0, 0, -0.5896905195522663, 'XYZ']
-			}
-		]
-	},
-	{
-		name: 'Level 2',
-		platforms: [
-			{
-				scale: [4, 0.5, 4],
-				position: [0, 0, -40],
-				rotation: [0, 0, 0.29790196078633, 'XYZ'],
-				isWin: true
-			},
-			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
-			{
-				position: [0, 0, -13.031173638120949],
-				scale: [4, 0.5, 4],
-				rotation: [0, 0, 0.35670475824945647, 'XYZ']
-			},
-			{
-				position: [0, 0, -25.96303713055015],
-				scale: [4, 0.5, 4],
-				rotation: [0, 0, -0.5896905195522663, 'XYZ']
 			}
 		]
 	}
