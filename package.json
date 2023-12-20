@@ -49,6 +49,7 @@
 		"postprocessing": "^6.33.4",
 		"simplex-noise": "^4.0.1",
 		"stats.js": "^0.17.0",
+		"svelte-legos": "^0.2.2",
 		"three": "^0.159.0",
 		"tweakpane": "^4.0.2"
 	}

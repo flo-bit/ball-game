@@ -15,10 +15,9 @@
 		playing,
 		playingCustomLevel,
 		selectedPlatform,
-		startPlatforms
+		startPlatforms,
+		platformsHistory
 	} from './gamestate';
-
-	const { rapier, world } = useRapier();
 </script>
 
 <svelte:window
@@ -62,7 +61,6 @@
 				// copy to clipboard
 				navigator.clipboard.writeText(JSON.stringify($platforms));
 				break;
-
 			case 'p':
 				$playing = true;
 				pushState('', {
@@ -71,6 +69,8 @@
 				break;
 
 			case '+':
+				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+
 				$platforms = [
 					...$platforms,
 					{
@@ -82,9 +82,12 @@
 				setTimeout(() => {
 					$selectedPlatform = $platforms.length - 1;
 				}, 100);
+
 				break;
 
 			case '-':
+				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+
 				if ($selectedPlatform != -1) {
 					$platforms = $platforms.filter((_, i) => i != $selectedPlatform);
 					$selectedPlatform = -1;
@@ -92,8 +95,8 @@
 				break;
 
 			case 'd':
-				console.log($selectedPlatform);
-				console.log($platforms.length);
+				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+
 				// duplicate
 				if ($selectedPlatform != -1) {
 					$platforms = [...$platforms, { ...$platforms[$selectedPlatform] }];
@@ -102,8 +105,9 @@
 					}, 100);
 				}
 				break;
-
 			case 'x':
+				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+
 				$platforms = startPlatforms;
 				break;
 			case 'n':
@@ -116,6 +120,18 @@
 					}
 				];
 				console.log($customLevels);
+				break;
+
+			case 'z':
+				// undo
+				console.log('undo', $platformsHistory.length);
+
+				let last = $platformsHistory.pop();
+				$platformsHistory = [...$platformsHistory];
+				if (last) $platforms = [...last];
+				break;
+			case 'y':
+				// redo?
 				break;
 
 			default:

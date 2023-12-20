@@ -10,6 +10,13 @@ This is a simple ball game written in Typescript using Threlte.
 - [x] Improve menu
 - [x] Add time keeping and local highscores
 
+- add fullscreen button
+
+- add settings menu
+    - fullscreen
+    - shadows
+    - sound
+
 - add undo button to editor
 
 - move camera in editor
@@ -19,8 +26,6 @@ This is a simple ball game written in Typescript using Threlte.
 - show "new highscore" when you get a new highscore
 
 - Add more levels
-
-- Add custom levels
 
 - Add sharing levels (import/export) maybe using links?
 
@@ -35,8 +40,6 @@ This is a simple ball game written in Typescript using Threlte.
 - Add sound effects
 
 - Add music
-
-- Add pause menu
 
 - FIX FPS DEPENDENT PHYSICS
 

@@ -35,6 +35,9 @@ export const startPlatforms: Platform[] = [
 ];
 
 export const platforms: Writable<Platform[]> = localStorageStore('platforms', startPlatforms);
+export const platformsHistory: Writable<Platform[][]> = localStorageStore('history', [
+	startPlatforms
+]);
 
 export const currentLevel: Writable<number> = localStorageStore('level', 0);
 

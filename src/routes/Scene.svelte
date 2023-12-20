@@ -16,7 +16,7 @@
 
 	import Stats from 'stats.js';
 	import { page } from '$app/stores';
-	import { CameraHelper, DirectionalLight, Object3D, Vector2 } from 'three';
+	import { CameraHelper, DirectionalLight, Object3D, Vector3 } from 'three';
 
 	let stats: Stats;
 	onMount(() => {
@@ -42,6 +42,7 @@
 
 	let target : Object3D;
 </script>
+
 
 {#if $page.state.gameState !== 'edit'}
 	{#if $currentLevel >= 0}
@@ -76,6 +77,7 @@
 	target={target}
 	position={[$playerPosition[0], $playerPosition[1] + 10, $playerPosition[2] - 10]}
 	intensity={1.0}
+	
 	castShadow
 	shadow.mapSize.width={1024 * 4}
 	shadow.mapSize.height={1024 * 4}
