@@ -5,7 +5,7 @@
 	// @ts-ignore
 	import type { TransformControls as TC } from 'three/examples/jsm/controls/TransformControls';
 	import { Collider } from '@threlte/rapier';
-	import { editMode, editSpace, selectedPlatform } from './gamestate';
+	import { editMode, editSpace, platforms, platformsHistory, selectedPlatform } from './gamestate';
 	import * as THREE from 'three';
 
 	import { interactivity } from '@threlte/extras';
@@ -20,9 +20,25 @@
 
 	let controls: TC;
 
+	let addedEventListener = false;
+
 	$: if (controls && $editMode) {
 		controls.mode = $editMode;
 		controls.setSpace($editSpace);
+
+		if (!addedEventListener) {
+			console.log('adding event listener');
+			addedEventListener = false;
+			// @ts-ignore
+			controls.addEventListener('dragging-changed', (event) => {
+				if ($selectedPlatform != index) return;
+
+				if (event.value) {
+					console.log('dragging started');
+					$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+				}
+			});
+		}
 	}
 
 	export let isWin = false;
