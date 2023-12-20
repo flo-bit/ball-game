@@ -1,7 +1,7 @@
 <script lang="ts">
 	// mostly stolen from https://threlte.xyz/docs/examples/camera/thirdpersoncamera
 	import { createEventDispatcher, onDestroy } from 'svelte';
-	import { Camera, Vector2, Vector3, Quaternion, Group } from 'three';
+	import { Camera, Vector2, Vector3, Quaternion, Group, Euler } from 'three';
 	import { useThrelte, useParent, useTask } from '@threlte/core';
 
 	export let object: Group | undefined;
@@ -23,6 +23,9 @@
 	const axis = new Vector3(0, 1, 0);
 	const rotationQuat = new Quaternion();
 
+	const _euler = new Euler(0, 0, 0, 'YXZ');
+	const _PI_2 = Math.PI / 2;
+
 	const { renderer, invalidate } = useThrelte();
 
 	const domElement = renderer.domElement;
@@ -38,16 +41,25 @@
 		throw new Error('Parent missing: <PointerLockControls> need to be a child of a <Camera>');
 	}
 
-	domElement.addEventListener('pointerdown', onPointerDown);
-	domElement.addEventListener('pointermove', onPointerMove);
-	domElement.addEventListener('pointerleave', onPointerLeave);
-	domElement.addEventListener('pointerup', onPointerUp);
+	// domElement.addEventListener('pointerdown', onPointerDown);
+	// domElement.addEventListener('pointermove', onPointerMove);
+	// domElement.addEventListener('pointerleave', onPointerLeave);
+	// domElement.addEventListener('pointerup', onPointerUp);
 
+	// onDestroy(() => {
+	// 	domElement.removeEventListener('pointerdown', onPointerDown);
+	// 	domElement.removeEventListener('pointermove', onPointerMove);
+	// 	domElement.removeEventListener('pointerleave', onPointerLeave);
+	// 	domElement.removeEventListener('pointerup', onPointerUp);
+	// });
+
+	domElement.addEventListener('mousemove', onPointerMove);
+	domElement.ownerDocument.addEventListener('pointerlockchange', onPointerlockChange);
+	domElement.ownerDocument.addEventListener('pointerlockerror', onPointerlockError);
 	onDestroy(() => {
-		domElement.removeEventListener('pointerdown', onPointerDown);
-		domElement.removeEventListener('pointermove', onPointerMove);
-		domElement.removeEventListener('pointerleave', onPointerLeave);
-		domElement.removeEventListener('pointerup', onPointerUp);
+		domElement.removeEventListener('mousemove', onPointerMove);
+		domElement.ownerDocument.removeEventListener('pointerlockchange', onPointerlockChange);
+		domElement.ownerDocument.removeEventListener('pointerlockerror', onPointerlockError);
 	});
 
 	// This is basically your update function
@@ -73,11 +85,16 @@
 			$camera.position.copy(currentPosition);
 			$camera.lookAt(currentLookAt);
 		}
+
+		rotateDelta.set(0, 0);
 	});
 
-	function onPointerMove(event: PointerEvent) {
+	function onPointerMove(event: MouseEvent) {
 		const { x, y } = event;
-		if (pointerDown && !isOrbiting) {
+		//if(!isLocked) return;
+
+		const { movementX, movementY } = event;
+		if (!isOrbiting) {
 			// calculate distance from init down
 			const distCheck =
 				Math.sqrt(Math.pow(x - rotateStart.x, 2) + Math.pow(y - rotateStart.y, 2)) > 10;
@@ -87,30 +104,25 @@
 		}
 		if (!isOrbiting) return;
 
-		rotateEnd.set(x, y);
-		rotateDelta.subVectors(rotateEnd, rotateStart).multiplyScalar(rotateSpeed);
-		rotateStart.copy(rotateEnd);
+		rotateDelta.set(movementX, movementY).multiplyScalar(rotateSpeed);
+		//rotateDelta.subVectors(rotateEnd, rotateStart).multiplyScalar(rotateSpeed);
+		//rotateStart.copy(rotateEnd);
 
 		invalidate();
 		dispatch('change');
 	}
-
-	function onPointerDown(event: PointerEvent) {
-		const { x, y } = event;
-		rotateStart.set(x, y);
-		pointerDown = true;
+	function onPointerlockChange() {
+		if (document.pointerLockElement === domElement) {
+			dispatch('lock');
+			isLocked = true;
+		} else {
+			dispatch('unlock');
+			isLocked = false;
+		}
 	}
 
-	function onPointerUp() {
-		rotateDelta.set(0, 0);
-		pointerDown = false;
-		isOrbiting = false;
-	}
-
-	function onPointerLeave() {
-		rotateDelta.set(0, 0);
-		pointerDown = false;
-		isOrbiting = false;
+	function onPointerlockError() {
+		console.error('PointerLockControls: Unable to use Pointer Lock API');
 	}
 
 	function vectorFromObject(vec: { x: number; y: number; z: number }) {
@@ -122,32 +134,17 @@
 		ideal.add(new Vector3(object.position.x, object.position.y, object.position.z));
 		return ideal;
 	}
+	export let minPolarAngle = 0; // radians
+	export let maxPolarAngle = Math.PI; // radians
+	export let pointerSpeed = 1.0;
+	let isLocked = false;
 
-	function onKeyDown(event: KeyboardEvent) {
-		switch (event.key) {
-			case 'q':
-				rotateDelta.x = -2 * rotateSpeed;
-				break;
-			case 'e':
-				rotateDelta.x = 2 * rotateSpeed;
-				break;
-			default:
-				break;
-		}
-	}
+	export const lock = () => domElement.requestPointerLock({
+      unadjustedMovement: true
+    });
 
-	function onKeyUp(event: KeyboardEvent) {
-		switch (event.key) {
-			case 'q':
-				rotateDelta.x = 0;
-				break;
-			case 'e':
-				rotateDelta.x = 0;
-				break;
-			default:
-				break;
-		}
-	}
+	export const unlock = () => document.exitPointerLock();
+
+	renderer.domElement.addEventListener('click', lock)
+
 </script>
-
-<svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} />
