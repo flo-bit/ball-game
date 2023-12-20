@@ -41,7 +41,7 @@
 	{#if credits}
 		<div class="absolute bottom-2 right-2 text-xs">
 			<a
-				href="https://www.github.com"
+				href="https://github.com/flo-bit/ball-game"
 				target="_blank"
 				class="text-neutral-400 hover:text-neutral-500 flex items-center"
 			>

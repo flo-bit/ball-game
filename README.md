@@ -39,3 +39,5 @@ This is a simple ball game written in Typescript using Threlte.
 - Add pause menu
 
 - FIX FPS DEPENDENT PHYSICS
+
+- REFACTOR

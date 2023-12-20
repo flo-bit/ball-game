@@ -17,9 +17,9 @@
 	>
 		{#if level.image}
 			<img
-				src={level.image}
-				alt="Hand stitched, orange leather long wallet."
-				class="this is what the level looks like"
+				src="/ball-game{level.image}"
+				alt="this is what the level looks like"
+				class="h-full w-full object-cover object-center"
 			/>
 		{/if}
 	</div>
