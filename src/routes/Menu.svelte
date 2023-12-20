@@ -35,7 +35,7 @@
 		{#if !$page.state.gameState || $page.state.gameState == 'menu'}
 			<Glass credits={true} class="w-full max-w-xl px-5 sm:px-10 relative">
 				<div class="text-6xl font-semibold tracking-tight text-center rounded-md mb-16">
-					the ball game
+					ball game
 				</div>
 
 				<div class="w-full max-w-xs mx-auto flex flex-col space-y-6">

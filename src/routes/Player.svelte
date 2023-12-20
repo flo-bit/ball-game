@@ -86,13 +86,12 @@
 		if (!rigidBody || !sphere) return;
 		// get direction
 		const velVec = temp.fromArray([
-			(left - right) * delta * 120,
+			(left - right),
 			up * jumpForce,
-			(forward - backward) * delta * 120
+			(forward - backward)
 		]); // left - right
 		if (up > 0) {
 			nicerTimer = 0;
-			console.log('jump');
 		}
 		up = 0;
 
