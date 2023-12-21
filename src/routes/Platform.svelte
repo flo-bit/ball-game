@@ -39,7 +39,7 @@
 		}
 	}
 
-	export let isWin = false;
+	export let type : 'normal' | 'win' = 'normal';
 
 	export let index: number;
 
@@ -56,20 +56,26 @@
 			rotation = ref.rotation.toArray() as [number, number, number];
 		}
 	});
+
+	export let hasPhysics = true;
 </script>
 
 <T.Object3D {position} {scale} {rotation} bind:ref>
-	{#if isWin}
-		<T.Object3D position={[0, 4, 0]}>
-			<Collider sensor shape={'cuboid'} args={[0.5, 4, 0.5]} type="dynamic" />
-		</T.Object3D>
+	{#if type == 'win'}
+		{#if hasPhysics}
+			<T.Object3D position={[0, 4, 0]}>
+				<Collider sensor shape={'cuboid'} args={[0.5, 4, 0.5]} type="dynamic" />
+			</T.Object3D>
+		{/if}
 
 		<T.Mesh receiveShadow>
 			<RoundedBoxGeometry args={[1, 1 * 2.02, 1]} radius={0.1} />
-			<T.MeshStandardMaterial color={new THREE.Color(0x0ea5e9)} roughness={0.3} />
+			<T.MeshStandardMaterial color={new THREE.Color(0x0ea5e9)} />
 		</T.Mesh>
 	{/if}
-	<Collider shape={'cuboid'} args={[1, 1, 1]} type="dynamic" />
+	{#if hasPhysics}
+		<Collider shape={'cuboid'} args={[1, 1, 1]} type="dynamic" />
+	{/if}
 	<T.Mesh
 		receiveShadow
 		castShadow
@@ -92,7 +98,7 @@
 		}}
 	>
 		<RoundedBoxGeometry args={[2, 2, 2]} radius={0.1} />
-		<T.MeshStandardMaterial color={!isWin ? 'white' : new THREE.Color(0x7dd3fc)} roughness={0.5} />
+		<T.MeshStandardMaterial color={type == 'win' ? new THREE.Color(0x7dd3fc): 'white'} roughness={0.5} />
 	</T.Mesh>
 
 	{#if showTransform}

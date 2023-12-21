@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { pushState } from '$app/navigation';
+	import { pushState, replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { useRapier } from '@threlte/rapier';
 	import Platform from './Platform.svelte';
@@ -63,7 +63,7 @@
 				break;
 			case 'p':
 				$playing = true;
-				pushState('', {
+				replaceState('', {
 					gameState: 'playing'
 				});
 				break;
@@ -147,7 +147,7 @@
 			bind:position={platform.position}
 			bind:rotation={platform.rotation}
 			index={i}
-			isWin={platform.isWin}
+			type={platform.type}
 		/>
 	{/each}
 {:else if $currentLevel >= 0}
@@ -158,7 +158,7 @@
 				bind:position={platform.position}
 				bind:rotation={platform.rotation}
 				index={i}
-				isWin={platform.isWin}
+				type={platform.type}
 			/>
 		{/each}
 	{:else}
@@ -168,7 +168,7 @@
 				bind:position={platform.position}
 				bind:rotation={platform.rotation}
 				index={i}
-				isWin={platform.isWin}
+				type={platform.type}
 			/>
 		{/each}
 	{/if}

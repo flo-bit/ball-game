@@ -6,10 +6,12 @@
 		currentLevel,
 		customLevels,
 		firstTime,
+		highscores,
 		levels,
 		playLevel,
 		playingCustomLevel,
 		playingTime,
+		showNewHighscore,
 		showShadows
 	} from './gamestate';
 
@@ -22,9 +24,10 @@
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
-	function gotoState(state: GameState) {
+	function gotoState(state: GameState, levelPage: number | undefined = undefined) {
 		pushState('', {
-			gameState: state
+			gameState: state,
+			levelPage: levelPage
 		});
 	}
 	function toggleFullscreen() {
@@ -57,7 +60,15 @@
 								$firstTime = false;
 								gotoState('gameHelp');
 							} else {
-								gotoState('levels');
+								let i = undefined;
+								// find first not done level
+								for(i = 0; i < levels.length; i++) {
+									if(i >= $highscores.length || $highscores[i] == null) {
+										break;
+									}
+								}
+
+								gotoState('levels', Math.floor(i / 6));
 							}
 						}}>play levels</Button
 					>
@@ -145,6 +156,12 @@
 					well done!
 				</div>
 
+				{#if $showNewHighscore}
+					<div class="text-red-400 font-semibold text-center mb-5">
+						new highscore!
+					</div>
+				{/if}
+
 				<div class="w-full max-w-xs mx-auto flex flex-col space-y-6">
 					<Button
 						onClick={() => {
@@ -155,11 +172,13 @@
 						onClick={() => {
 							if ($playingCustomLevel) {
 								replaceState('', {
-									gameState: 'customLevels'
+									gameState: 'customLevels',
+									levelPage: Math.floor($currentLevel / 6)
 								});
 							} else {
 								replaceState('', {
-									gameState: 'levels'
+									gameState: 'levels',
+									levelPage: Math.floor($currentLevel / 6)
 								});
 							}
 						}}>back to levels</Button

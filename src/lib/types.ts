@@ -16,7 +16,7 @@ export type Platform = {
 	position: [number, number, number];
 	scale: [number, number, number];
 	rotation: [number, number, number] | [number, number, number, EulerOrder];
-	isWin?: boolean;
+	type?: 'normal' | 'win';
 };
 
 export type Level = {

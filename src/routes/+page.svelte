@@ -4,6 +4,8 @@
 
 	import Scene from './Scene.svelte';
 	import Menu from './Menu.svelte';
+	import { currentLevel } from './gamestate';
+	import EditControls from './EditControls.svelte';
 </script>
 
 <div class="fixed w-screen h-screen -z-10">
@@ -15,3 +17,5 @@
 </div>
 
 <Menu />
+
+<EditControls />

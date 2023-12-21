@@ -16,7 +16,10 @@
 		customHighscores,
 		playingCustomLevel,
 
-		playerPosition
+		playerPosition,
+
+		showNewHighscore
+
 
 	} from './gamestate';
 	import { replaceState } from '$app/navigation';
@@ -211,14 +214,17 @@
 
 		let time = $playingTime;
 
+		$showNewHighscore = false;
 		// check if new best time
 		if ($playingCustomLevel) {
 			if (!$customHighscores[$currentLevel] || $customHighscores[$currentLevel] > time) {
 				$customHighscores[$currentLevel] = time;
+				$showNewHighscore = true;
 			}
 		} else {
 			if (!$highscores[$currentLevel] || $highscores[$currentLevel] > time) {
 				$highscores[$currentLevel] = time;
+				$showNewHighscore = true;
 			}
 		}
 

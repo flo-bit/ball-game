@@ -1,14 +1,23 @@
 <script>
+	import { pushState, replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { canEdit, editMode, platforms, selectedPlatform } from './gamestate';
+	import {
+		editMode,
+		platforms,
+		selectedPlatform,
+		playing,
+		canEdit,
+		platformsHistory
+	} from './gamestate';
 </script>
 
-{#if $page.state.gameState == 'edit'}
-	<div class="fixed top-2 left-2 right-2 flex justify-between">
-		<div>
+{#if $canEdit}
+	<div class="fixed top-2 bottom-0 right-2 flex flex-col h-screen z-20 fill-neutral-800 opacity-75">
+		<div class="flex flex-col mb-8 gap-y-2">
 			<button
 				on:click={() => ($editMode = 'translate')}
-				class="p-2 py-1 bg-black/30 hover:bg-black/50 ring-1 ring-black/50 fill-white rounded-sm font-semibold"
+				class="p-1 hover:opacity-60"
+				title="move selected platform (shortcut 't')"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 512 512"
 					><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path
@@ -18,7 +27,8 @@
 			</button>
 			<button
 				on:click={() => ($editMode = 'rotate')}
-				class="p-2 py-1 bg-black/30 hover:bg-black/50 ring-1 ring-black/50 fill-white rounded-sm font-semibold"
+				class="p-1 hover:opacity-60"
+				title="rotate selected platform (shortcut 'r')"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 512 512"
 					><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path
@@ -28,7 +38,8 @@
 			</button>
 			<button
 				on:click={() => ($editMode = 'scale')}
-				class="p-2 py-1 bg-black/30 hover:bg-black/50 ring-1 ring-black/50 fill-white rounded-sm font-semibold"
+				class="p-1 hover:opacity-60"
+				title="scale selected platform (shortcut 's')"
 			>
 				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 512 512"
 					><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path
@@ -38,17 +49,88 @@
 			</button>
 		</div>
 
+		<div class="flex flex-col mb-10 gap-y-2">
+			<button
+				on:click={() => {
+					$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+
+					$platforms = [
+						...$platforms,
+						{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0] }
+					];
+
+					setTimeout(() => {
+						$selectedPlatform = $platforms.length - 1;
+					}, 100);
+				}}
+				class="p-1 hover:opacity-60"
+				title="add a new platform (shortcut '+')"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 448 512"
+					><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path
+						d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"
+					/></svg
+				>
+			</button>
+
+			<button
+				on:click={() => {
+					if ($selectedPlatform == -1) return;
+					$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+
+					// duplicate
+					$platforms = [...$platforms, { ...$platforms[$selectedPlatform] }];
+					setTimeout(() => {
+						$selectedPlatform = $platforms.length - 1;
+					}, 100);
+				}}
+				class="p-1 hover:opacity-60"
+				title="duplicate selected platform (shortcut 'd')"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 448 512"
+					><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path
+						d="M208 0H332.1c12.7 0 24.9 5.1 33.9 14.1l67.9 67.9c9 9 14.1 21.2 14.1 33.9V336c0 26.5-21.5 48-48 48H208c-26.5 0-48-21.5-48-48V48c0-26.5 21.5-48 48-48zM48 128h80v64H64V448H256V416h64v48c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V176c0-26.5 21.5-48 48-48z"
+					/></svg
+				>
+			</button>
+			<button
+				on:click={() => {
+					if ($selectedPlatform == -1) return;
+					$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+
+					$platforms = $platforms.filter((_, i) => i != $selectedPlatform);
+				}}
+				class="p-1 hover:opacity-60"
+				title="delete selected platform (shortcut '-')"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 448 512"
+					><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path
+						d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"
+					/></svg
+				>
+			</button>
+		</div>
+	</div>
+
+	<div class="fixed right-2 left-2 top-2 flex justify-center">
 		<div>
 			<button
 				on:click={() => {
-					if ($page.state.gameState == 'playing') $page.state.gameState = 'edit';
-					else $page.state.gameState = 'playing';
+					if ($page.state.gameState == 'playing') {
+						replaceState('', {
+							gameState: 'edit'
+						});
+						$playing = false;
+					} else {
+						replaceState('', {
+							gameState: 'playing'
+						});
+						$playing = true;
+					}
 				}}
-				class="p-2 py-1 {$page.state.gameState == 'playing'
-					? 'bg-black/80'
-					: 'bg-black/30'} ring-1 hover:bg-black/50 ring-black/50 fill-white rounded-sm font-semibold"
+				class="p-1 hover:opacity-60"
 			>
-				{#if $page.state.gameState !== 'playing'}
+				{#if !$playing}
 					<svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" viewBox="0 0 384 512"
 						><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path
 							d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
@@ -61,41 +143,6 @@
 						/></svg
 					>
 				{/if}
-			</button>
-		</div>
-
-		<div>
-			<button
-				on:click={() => {
-					if ($selectedPlatform == -1) return;
-					$platforms = $platforms.filter((_, i) => i != $selectedPlatform);
-				}}
-				class="p-2 py-1 bg-black/30 hover:bg-black/50 ring-1 ring-black/50 fill-white rounded-sm font-semibold"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 448 512"
-					><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path
-						d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"
-					/></svg
-				>
-			</button>
-			<button
-				on:click={() => {
-					$platforms = [
-						...$platforms,
-						{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0] }
-					];
-
-					setTimeout(() => {
-						$selectedPlatform = $platforms.length - 1;
-					}, 100);
-				}}
-				class="p-2 py-1 bg-black/30 hover:bg-black/50 ring-1 ring-black/50 fill-white rounded-sm font-semibold"
-			>
-				<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 448 512"
-					><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path
-						d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"
-					/></svg
-				>
 			</button>
 		</div>
 	</div>
