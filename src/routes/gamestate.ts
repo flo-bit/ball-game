@@ -202,6 +202,33 @@ export const levels: Level[] = [
 				rotation: [0, 0, 0, 'XYZ']
 			}
 		]
+	},
+	{
+		name: 'unstable',
+		platforms: [
+			{
+				scale: [4, 0.5, 4],
+				position: [0, 0, -38.5106006212193],
+				rotation: [0, 0, 0, 'XYZ'],
+				isWin: true
+			},
+			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
+			{
+				position: [0, -1.407325156453589, -9.752171784304942],
+				scale: [1.3756253797770193, 0.5, 4],
+				rotation: [0, 0, -1.377718749299762, 'XYZ']
+			},
+			{
+				position: [0, -1.407325156453589, -19.347765167785376],
+				scale: [1.3756253797770193, 0.5, 4],
+				rotation: [0, 0, -1.6259660684128463, 'XYZ']
+			},
+			{
+				position: [0, -1.407325156453589, -28.5936794532523],
+				scale: [1.3756253797770193, 0.5, 4],
+				rotation: [0, 0, -1.4269680352972387, 'XYZ']
+			}
+		]
 	}
 ];
 
@@ -223,3 +250,5 @@ export const playLevel = (level: number, custom: boolean | undefined = undefined
 };
 
 export const playerPosition: Writable<[number, number, number]> = writable([0, 0, 0]);
+
+export const showShadows: Writable<boolean> = localStorageStore('shadows', true);
