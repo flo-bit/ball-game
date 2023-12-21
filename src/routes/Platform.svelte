@@ -27,14 +27,12 @@
 		controls.setSpace($editSpace);
 
 		if (!addedEventListener) {
-			console.log('adding event listener');
-			addedEventListener = false;
+			addedEventListener = true;
 			// @ts-ignore
 			controls.addEventListener('dragging-changed', (event) => {
 				if ($selectedPlatform != index) return;
 
 				if (event.value) {
-					console.log('dragging started');
 					$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
 				}
 			});

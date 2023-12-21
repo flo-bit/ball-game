@@ -2,7 +2,16 @@
 	import LevelCard from './LevelCard.svelte';
 	import type { Level } from '../types';
 	import { pushState, replaceState } from '$app/navigation';
-	import { canEdit, currentLevel, customHighscores, highscores, playLevel, playing, playingTime } from '../../routes/gamestate';
+	import {
+		canEdit,
+		currentLevel,
+		customHighscores,
+		highscores,
+		playLevel,
+		playing,
+		playingTime,
+		selectedPlatform
+	} from '../../routes/gamestate';
 	import SmallButton from './SmallButton.svelte';
 
 	export let levels: Level[] = [];
@@ -19,6 +28,7 @@
 			level={{ name: 'new level', platforms: [] }}
 			onClick={() => {
 				$canEdit = true;
+				$selectedPlatform = 0;
 				pushState('', {
 					gameState: 'edit'
 				});
@@ -27,28 +37,31 @@
 		/>
 	{/if}
 
-	{#each [...levels].splice(start, start+page) as level, index}
+	{#each [...levels].splice(start, start + page) as level, index}
 		<LevelCard
 			{level}
 			highscore={customLevels ? $customHighscores[index] : $highscores[index]}
 			onClick={() => {
 				$canEdit = false;
-				playLevel(index, customLevels);
+				playLevel(start + index, customLevels);
 			}}
 		/>
 	{/each}
-
 </div>
 <div class="mt-4 flex justify-end gap-x-2">
 	{#if start > 0}
-		<SmallButton onClick={() => {
-			start -= page;
-			start = Math.max(0, start);
-		}}>Previous</SmallButton>
+		<SmallButton
+			onClick={() => {
+				start -= page;
+				start = Math.max(0, start);
+			}}>Previous</SmallButton
+		>
 	{/if}
 	{#if start + page < levels.length}
-		<SmallButton onClick={() => {
-			start += page;
-		}}>Next</SmallButton>
+		<SmallButton
+			onClick={() => {
+				start += page;
+			}}>Next</SmallButton
+		>
 	{/if}
 </div>
