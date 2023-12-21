@@ -119,7 +119,7 @@
 	<T.DirectionalLight
 		ref={dirLight}
 		{target}
-		position={[$playerPosition[0], $playerPosition[1] + 10, $playerPosition[2] - 10]}
+		position={[$playerPosition[0], $playerPosition[0] + 100, $playerPosition[2] - 100]}
 		intensity={1.0}
 		castShadow
 		shadow.mapSize.width={1024 * 4}

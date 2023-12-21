@@ -1,7 +1,7 @@
 import { localStorageStore } from '$lib/LocalStorageStore/LocalStorageStore';
 import { writable, type Writable } from 'svelte/store';
 import type { Platform, Level } from '$lib/types';
-import { pushState } from '$app/navigation';
+import { pushState, replaceState } from '$app/navigation';
 
 export const playing: Writable<boolean> = writable(false);
 
@@ -30,7 +30,7 @@ export const startPlatforms: Platform[] = [
 		scale: [4, 0.5, 4],
 		position: [0, 0, -40],
 		rotation: [0, 0, 0],
-		isWin: true
+		type: 'win'
 	}
 ];
 
@@ -57,7 +57,7 @@ export const levels: Level[] = [
 				scale: [4, 0.5, 4],
 				position: [14.710153919714521, 0, -30.60983074984392],
 				rotation: [0, 0, 0, 'XYZ'],
-				isWin: true
+				type: 'win'
 			},
 			{
 				scale: [4, 0.5, 11.39683540432216],
@@ -70,7 +70,7 @@ export const levels: Level[] = [
 		image: '/images/jumps.png',
 		name: 'jumps',
 		platforms: [
-			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0, 'XYZ'], isWin: true },
+			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0, 'XYZ'], type: 'win' },
 			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
 			{ position: [0, 0, -13.031173638120949], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
 			{ position: [0, 0, -25.96303713055015], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] }
@@ -84,7 +84,7 @@ export const levels: Level[] = [
 				scale: [4, 0.5, 4],
 				position: [0, 0, -40],
 				rotation: [0, 0, 0.29790196078633, 'XYZ'],
-				isWin: true
+				type: 'win'
 			},
 			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
 			{
@@ -105,7 +105,7 @@ export const levels: Level[] = [
 		name: 'balance',
 		platforms: [
 			{ scale: [4, 0.5, 4], position: [0, 0, 0], rotation: [0, 0, 0, 'XYZ'] },
-			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0, 'XYZ'], isWin: true },
+			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0, 'XYZ'], type: 'win' },
 			{
 				scale: [0.3273853771319995, 0.5, 14.882666399413333],
 				position: [0, -0.1985622847682409, -20.149337227863658],
@@ -118,7 +118,7 @@ export const levels: Level[] = [
 		name: 'up and down',
 		platforms: [
 			{ scale: [4, 0.5, 4], position: [0, 0, 0], rotation: [0, 0, 0, 'XYZ'] },
-			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0], isWin: true },
+			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0], type: 'win' },
 			{
 				scale: [4, 0.5, 4],
 				position: [0, 1.5129388147544773, -7.321495921119439],
@@ -149,7 +149,7 @@ export const levels: Level[] = [
 				scale: [4, 0.5, 4],
 				position: [0, 10.422115086009022, -0.1478780521643741],
 				rotation: [0, 0, 0, 'XYZ'],
-				isWin: true
+				type: 'win'
 			},
 			{
 				position: [-0.003140599717756487, 0, -0.005938005282195569],
@@ -210,7 +210,7 @@ export const levels: Level[] = [
 				scale: [4, 0.5, 4],
 				position: [0, 0, -38.5106006212193],
 				rotation: [0, 0, 0, 'XYZ'],
-				isWin: true
+				type: 'win'
 			},
 			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
 			{
@@ -229,12 +229,93 @@ export const levels: Level[] = [
 				rotation: [0, 0, -1.4269680352972387, 'XYZ']
 			}
 		]
+	},
+	{
+		name: 'test',
+		platforms: [
+			{ scale: [4, 0.5, 4], position: [0, 0, 0], rotation: [0, 0, 0, 'XYZ'] },
+			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0], type: 'win' },
+			{
+				scale: [2.251843724978521, 0.5, 9.272233890947485],
+				position: [0, -6.275587982327923, -10.266899000296856],
+				rotation: [-0.7515008406840861, 0, 0, 'XYZ']
+			},
+			{
+				scale: [2.251843724978521, 0.5, 13.662286491614198],
+				position: [0, -6.275587982327923, -24.16930203902464],
+				rotation: [0.48273048235999805, 0, 0, 'XYZ']
+			}
+		]
+	},
+	{
+		name: 'holes',
+		platforms: [
+			{ scale: [4, 0.5, 4], position: [0, 0, 0], rotation: [0, 0, 0, 'XYZ'] },
+			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0, 'XYZ'], type: 'win' },
+			{
+				scale: [2.7479775572042366, 0.5, 1.6495470951258044],
+				position: [-1.249664585534397, 0, -5.349223789150164],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{
+				scale: [2.7479775572042366, 0.5, 1.6495470951258044],
+				position: [1.3316018520296717, 0, -8.385409027880756],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{
+				scale: [2.7479775572042366, 0.5, 1.6495470951258044],
+				position: [-1.1969275198568154, 0, -11.345880530273982],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{
+				scale: [1.363850307007166, 0.5, 1.6495470951258044],
+				position: [-2.561066253282764, 0, -14.469992237728778],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{
+				scale: [1.363850307007166, 0.5, 1.6495470951258044],
+				position: [0.1629179177725213, 0, -17.62326157863934],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{
+				scale: [2.7479775572042366, 0.5, 1.6495470951258044],
+				position: [-1.1969275198568154, 0, -20.690501596822926],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{
+				scale: [1.363850307007166, 0.5, 1.6495470951258044],
+				position: [2.7361780177746766, 0, -23.77969661528989],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{
+				scale: [2.7479775572042366, 0.5, 1.6495470951258044],
+				position: [-1.1969275198568154, 0, -26.826454342829738],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{
+				scale: [2.7479775572042366, 0.5, 1.6495470951258044],
+				position: [1.3316018520296717, 0, -29.97524573150933],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{
+				scale: [1.363850307007166, 0.5, 0.828345270969725],
+				position: [2.7361780177746766, 0, -32.15629581514443],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0, 'XYZ'], type: 'win' }
+		]
 	}
 ];
 
 export const playingCustomLevel: Writable<boolean> = writable(false);
 
-export const playLevel = (level: number, custom: boolean | undefined = undefined) => {
+export const showNewHighscore: Writable<boolean> = writable(false);
+
+export const playLevel = (
+	level: number,
+	shouldReplaceState: boolean = false,
+	custom: boolean | undefined = undefined
+) => {
 	if (custom != undefined) playingCustomLevel.set(custom);
 	currentLevel.set(-1);
 	playing.set(true);
@@ -244,11 +325,19 @@ export const playLevel = (level: number, custom: boolean | undefined = undefined
 		currentLevel.set(level);
 	}, 100);
 
-	pushState('', {
-		gameState: 'playing'
-	});
+	if (shouldReplaceState) {
+		replaceState('', {
+			gameState: 'playing'
+		});
+	} else {
+		pushState('', {
+			gameState: 'playing'
+		});
+	}
 };
 
 export const playerPosition: Writable<[number, number, number]> = writable([0, 0, 0]);
 
 export const showShadows: Writable<boolean> = localStorageStore('shadows', true);
+
+export const showSaveLevelDialog: Writable<boolean> = writable(false);

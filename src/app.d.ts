@@ -10,6 +10,7 @@ declare global {
 		// interface PageData {}
 		interface PageState {
 			gameState: GameState | null;
+			levelPage?: number;
 		}
 		// interface Platform {}
 	}
