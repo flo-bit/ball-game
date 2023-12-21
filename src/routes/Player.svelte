@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Euler, Group, Vector3, MeshStandardMaterial } from 'three';
 	import { T, useTask } from '@threlte/core';
-	import { RigidBody, Collider } from '@threlte/rapier';
+	import { RigidBody, Collider, CollisionGroups } from '@threlte/rapier';
 	import Controller from './ThirdPersonControls.svelte';
 
 	import { RigidBody as RapierRigidBody } from '@dimforge/rapier3d-compat';
@@ -15,12 +15,8 @@
 		canEdit,
 		customHighscores,
 		playingCustomLevel,
-
 		playerPosition,
-
 		showNewHighscore
-
-
 	} from './gamestate';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -77,6 +73,7 @@
 		if ($page.state.gameState !== 'playing') {
 			rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
 			rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+			return;
 		}
 
 		if (grounded) {
@@ -88,11 +85,7 @@
 
 		if (!rigidBody || !sphere) return;
 		// get direction
-		const velVec = temp.fromArray([
-			(left - right),
-			up * jumpForce,
-			(forward - backward)
-		]); // left - right
+		const velVec = temp.fromArray([left - right, up * jumpForce, forward - backward]); // left - right
 		if (up > 0) {
 			nicerTimer = 0;
 		}
@@ -370,15 +363,16 @@
 
 <T.Group bind:ref={sphere} {position} rotation.y={Math.PI}>
 	<RigidBody bind:rigidBody linearDamping={0} gravityScale={5}>
-		<Collider
-			shape={'ball'}
-			args={[radius + 0.02]}
-			density={100}
-			restitution={0.7}
-			on:collisionenter={() => (grounded = true)}
-			on:collisionexit={() => (grounded = false)}
-			on:sensorenter={levelDone}
-		/>
+		<CollisionGroups groups={[1, 2, 4]}>
+			<Collider
+				shape={'ball'}
+				args={[radius + 0.02]}
+				density={100}
+				restitution={0.7}
+				on:collisionenter={() => (grounded = true)}
+				on:collisionexit={() => (grounded = false)}
+			/>
+		</CollisionGroups>
 		<T.Mesh castShadow receiveShadow>
 			<T.SphereGeometry args={[radius, 32, 32]} />
 			<T is={material} {color} metalness={1.0} roughness={0.0} />

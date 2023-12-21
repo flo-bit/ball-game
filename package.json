@@ -46,9 +46,14 @@
 		"@threlte/xr": "^0.1.2",
 		"@types/three": "^0.159.0",
 		"alea": "^1.0.1",
+		"bits-ui": "^0.11.8",
+		"clsx": "^2.0.0",
+		"lucide-svelte": "^0.299.0",
 		"postprocessing": "^6.33.4",
 		"simplex-noise": "^4.0.1",
 		"stats.js": "^0.17.0",
+		"tailwind-merge": "^2.2.0",
+		"tailwind-variants": "^0.1.19",
 		"three": "^0.159.0",
 		"tweakpane": "^4.0.2"
 	}

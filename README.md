@@ -2,6 +2,8 @@
 
 ## Description
 
+Work in progress.
+
 This is a simple ball game written in Typescript using Threlte.
 
 Try it out [here](https://flo-bit.github.io/ball-game/).

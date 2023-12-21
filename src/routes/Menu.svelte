@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Glass from '$lib/components/Glass.svelte';
+	import Glass from '$lib/ui/Glass.svelte';
 	import { page } from '$app/stores';
 	import {
 		canEdit,
@@ -17,9 +17,9 @@
 
 	import { pushState, replaceState } from '$app/navigation';
 
-	import Button from '$lib/components/Button.svelte';
-	import LevelCard from '$lib/components/LevelCard.svelte';
-	import Levels from '$lib/components/Levels.svelte';
+	import Button from '$lib/ui/Button.svelte';
+	import LevelCard from '$lib/ui/LevelCard.svelte';
+	import Levels from '$lib/ui/Levels.svelte';
 	import type { GameState } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
@@ -157,15 +157,15 @@
 				</div>
 
 				{#if $showNewHighscore}
-					<div class="text-red-400 font-semibold text-center mb-5">
-						new highscore!
+					<div class="text-emerald-600 font-semibold text-center mb-12 text-xl">
+						new highscore:<br>{$highscores[$currentLevel].toFixed(2)} seconds
 					</div>
 				{/if}
 
 				<div class="w-full max-w-xs mx-auto flex flex-col space-y-6">
 					<Button
 						onClick={() => {
-							playLevel($currentLevel);
+							playLevel($currentLevel, true);
 						}}>play again</Button
 					>
 					<Button
@@ -186,7 +186,7 @@
 					{#if !$playingCustomLevel ? $currentLevel < levels.length - 1 : $currentLevel < $customLevels.length - 1}
 						<Button
 							onClick={() => {
-								playLevel($currentLevel + 1);
+								playLevel($currentLevel + 1, true);
 							}}>next level</Button
 						>
 					{/if}

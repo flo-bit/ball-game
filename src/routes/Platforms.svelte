@@ -16,7 +16,10 @@
 		playingCustomLevel,
 		selectedPlatform,
 		startPlatforms,
-		platformsHistory
+		platformsHistory,
+
+		showSaveLevelDialog
+
 	} from './gamestate';
 </script>
 
@@ -59,7 +62,7 @@
 				break;
 			case 'c':
 				// copy to clipboard
-				navigator.clipboard.writeText(JSON.stringify($platforms));
+				navigator.clipboard.writeText(JSON.stringify({name: 'New Level', platforms: $platforms}));
 				break;
 			case 'p':
 				$playing = true;
@@ -68,7 +71,7 @@
 				});
 				break;
 
-			case '+':
+				case '+':
 				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
 
 				$platforms = [
@@ -77,6 +80,23 @@
 						position: [0, 0, 0],
 						scale: [4, 0.5, 4],
 						rotation: [0, 0, 0]
+					}
+				];
+				setTimeout(() => {
+					$selectedPlatform = $platforms.length - 1;
+				}, 100);
+
+				break;
+			case 'f':
+				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+
+				$platforms = [
+					...$platforms,
+					{
+						position: [0, 0, 0],
+						scale: [4, 0.5, 4],
+						rotation: [0, 0, 0],
+						type: 'force'
 					}
 				];
 				setTimeout(() => {
@@ -106,20 +126,12 @@
 				}
 				break;
 			case 'x':
-				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+				$platformsHistory = [window.structuredClone($platforms)];
 
 				$platforms = startPlatforms;
 				break;
 			case 'n':
-				// add to custom levels
-				$customLevels = [
-					...$customLevels,
-					{
-						name: 'Level ' + ($customLevels.length + 1),
-						platforms: $platforms
-					}
-				];
-				console.log($customLevels);
+				$showSaveLevelDialog = true;
 				break;
 
 			case 'z':

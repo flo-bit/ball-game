@@ -1,7 +1,7 @@
 import { localStorageStore } from '$lib/LocalStorageStore/LocalStorageStore';
 import { writable, type Writable } from 'svelte/store';
 import type { Platform, Level } from '$lib/types';
-import { pushState } from '$app/navigation';
+import { pushState, replaceState } from '$app/navigation';
 
 export const playing: Writable<boolean> = writable(false);
 
@@ -311,7 +311,11 @@ export const playingCustomLevel: Writable<boolean> = writable(false);
 
 export const showNewHighscore: Writable<boolean> = writable(false);
 
-export const playLevel = (level: number, custom: boolean | undefined = undefined) => {
+export const playLevel = (
+	level: number,
+	shouldReplaceState: boolean = false,
+	custom: boolean | undefined = undefined
+) => {
 	if (custom != undefined) playingCustomLevel.set(custom);
 	currentLevel.set(-1);
 	playing.set(true);
@@ -321,11 +325,19 @@ export const playLevel = (level: number, custom: boolean | undefined = undefined
 		currentLevel.set(level);
 	}, 100);
 
-	pushState('', {
-		gameState: 'playing'
-	});
+	if (shouldReplaceState) {
+		replaceState('', {
+			gameState: 'playing'
+		});
+	} else {
+		pushState('', {
+			gameState: 'playing'
+		});
+	}
 };
 
 export const playerPosition: Writable<[number, number, number]> = writable([0, 0, 0]);
 
 export const showShadows: Writable<boolean> = localStorageStore('shadows', true);
+
+export const showSaveLevelDialog: Writable<boolean> = writable(false);

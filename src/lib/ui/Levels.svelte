@@ -32,7 +32,7 @@
 			highscore={customLevels ? $customHighscores[start + index] : $highscores[start + index]}
 			onClick={() => {
 				$canEdit = false;
-				playLevel(start + index, customLevels);
+				playLevel(start + index, false, customLevels);
 			}}
 		/>
 	{/each}
