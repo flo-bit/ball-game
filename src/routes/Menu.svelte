@@ -156,7 +156,7 @@
 					well done!
 				</div>
 
-				{#if $showNewHighscore}
+				{#if $showNewHighscore && $highscores[$currentLevel]}
 					<div class="text-emerald-600 font-semibold text-center mb-12 text-xl">
 						new highscore:<br>{$highscores[$currentLevel].toFixed(2)} seconds
 					</div>

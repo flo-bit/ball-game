@@ -17,10 +17,26 @@
 		selectedPlatform,
 		startPlatforms,
 		platformsHistory,
-
 		showSaveLevelDialog
-
 	} from './gamestate';
+	import type { PlatformType } from '$lib/types';
+
+	function newPlatform(type: PlatformType) {
+		$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+
+		$platforms = [
+			...$platforms,
+			{
+				position: [0, 0, 0],
+				scale: [4, 0.5, 4],
+				rotation: [0, 0, 0],
+				type: type
+			}
+		];
+		setTimeout(() => {
+			$selectedPlatform = $platforms.length - 1;
+		}, 100);
+	}
 </script>
 
 <svelte:window
@@ -62,7 +78,7 @@
 				break;
 			case 'c':
 				// copy to clipboard
-				navigator.clipboard.writeText(JSON.stringify({name: 'New Level', platforms: $platforms}));
+				navigator.clipboard.writeText(JSON.stringify({ name: 'New Level', platforms: $platforms }));
 				break;
 			case 'p':
 				$playing = true;
@@ -71,38 +87,15 @@
 				});
 				break;
 
-				case '+':
-				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+			case '+':
+				newPlatform('normal');
+				break;
 
-				$platforms = [
-					...$platforms,
-					{
-						position: [0, 0, 0],
-						scale: [4, 0.5, 4],
-						rotation: [0, 0, 0]
-					}
-				];
-				setTimeout(() => {
-					$selectedPlatform = $platforms.length - 1;
-				}, 100);
-
+			case 'g':
+				newPlatform('win');
 				break;
 			case 'f':
-				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
-
-				$platforms = [
-					...$platforms,
-					{
-						position: [0, 0, 0],
-						scale: [4, 0.5, 4],
-						rotation: [0, 0, 0],
-						type: 'force'
-					}
-				];
-				setTimeout(() => {
-					$selectedPlatform = $platforms.length - 1;
-				}, 100);
-
+				newPlatform('force');
 				break;
 
 			case '-':
