@@ -20,8 +20,6 @@
 
 	let perPage = 6;
 	$: start = ($page.state.levelPage ?? 0) * perPage;
-
-	$: console.log(start);
 </script>
 
 <div class="grid grid-cols-2 gap-x-4 gap-y-5 sm:gap-x-6 sm:grid-cols-3 lg:gap-x-8">

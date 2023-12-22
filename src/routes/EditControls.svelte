@@ -16,8 +16,26 @@
 	import { Input } from '$lib/components/ui/input';
 
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import type { PlatformType } from '$lib/types';
 
 	let levelName = '';
+
+	function newPlatform(type: PlatformType = 'normal') {
+		$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+
+		$platforms = [
+			...$platforms,
+			{
+				position: [0, 0, 0],
+				scale: [4, 0.5, 4],
+				rotation: [0, 0, 0],
+				type: type
+			}
+		];
+		setTimeout(() => {
+			$selectedPlatform = $platforms.length - 1;
+		}, 100);
+	}
 </script>
 
 {#if $page.state.gameState == 'edit' || ($page.state.gameState == 'playing' && $canEdit)}
@@ -93,9 +111,28 @@
 				<Menubar.Sub>
 					<Menubar.SubTrigger>new</Menubar.SubTrigger>
 					<Menubar.SubContent>
-						<Menubar.Item>normal</Menubar.Item>
-						<Menubar.Item>win</Menubar.Item>
-						<Menubar.Item>force</Menubar.Item>
+						<Menubar.Item
+							on:click={() => {
+								newPlatform('normal');
+							}}
+							>normal
+
+							<Menubar.Shortcut>+</Menubar.Shortcut>
+						</Menubar.Item>
+						<Menubar.Item
+							on:click={() => {
+								newPlatform('win');
+							}}
+							>win
+							<Menubar.Shortcut>w</Menubar.Shortcut></Menubar.Item
+						>
+						<Menubar.Item
+							on:click={() => {
+								newPlatform('force');
+							}}
+							>force
+							<Menubar.Shortcut>f</Menubar.Shortcut></Menubar.Item
+						>
 					</Menubar.SubContent>
 				</Menubar.Sub>
 				<Menubar.Item
