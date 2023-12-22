@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { pushState } from '$app/navigation';
+	import { pushState, replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { useRapier } from '@threlte/rapier';
 	import Platform from './Platform.svelte';
@@ -16,8 +16,27 @@
 		playingCustomLevel,
 		selectedPlatform,
 		startPlatforms,
-		platformsHistory
+		platformsHistory,
+		showSaveLevelDialog
 	} from './gamestate';
+	import type { PlatformType } from '$lib/types';
+
+	function newPlatform(type: PlatformType) {
+		$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+
+		$platforms = [
+			...$platforms,
+			{
+				position: [0, 0, 0],
+				scale: [4, 0.5, 4],
+				rotation: [0, 0, 0],
+				type: type
+			}
+		];
+		setTimeout(() => {
+			$selectedPlatform = $platforms.length - 1;
+		}, 100);
+	}
 </script>
 
 <svelte:window
@@ -59,30 +78,24 @@
 				break;
 			case 'c':
 				// copy to clipboard
-				navigator.clipboard.writeText(JSON.stringify($platforms));
+				navigator.clipboard.writeText(JSON.stringify({ name: 'New Level', platforms: $platforms }));
 				break;
 			case 'p':
 				$playing = true;
-				pushState('', {
+				replaceState('', {
 					gameState: 'playing'
 				});
 				break;
 
 			case '+':
-				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+				newPlatform('normal');
+				break;
 
-				$platforms = [
-					...$platforms,
-					{
-						position: [0, 0, 0],
-						scale: [4, 0.5, 4],
-						rotation: [0, 0, 0]
-					}
-				];
-				setTimeout(() => {
-					$selectedPlatform = $platforms.length - 1;
-				}, 100);
-
+			case 'g':
+				newPlatform('win');
+				break;
+			case 'f':
+				newPlatform('force');
 				break;
 
 			case '-':
@@ -106,20 +119,12 @@
 				}
 				break;
 			case 'x':
-				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+				$platformsHistory = [window.structuredClone($platforms)];
 
 				$platforms = startPlatforms;
 				break;
 			case 'n':
-				// add to custom levels
-				$customLevels = [
-					...$customLevels,
-					{
-						name: 'Level ' + ($customLevels.length + 1),
-						platforms: $platforms
-					}
-				];
-				console.log($customLevels);
+				$showSaveLevelDialog = true;
 				break;
 
 			case 'z':
@@ -147,7 +152,7 @@
 			bind:position={platform.position}
 			bind:rotation={platform.rotation}
 			index={i}
-			isWin={platform.isWin}
+			type={platform.type}
 		/>
 	{/each}
 {:else if $currentLevel >= 0}
@@ -158,7 +163,7 @@
 				bind:position={platform.position}
 				bind:rotation={platform.rotation}
 				index={i}
-				isWin={platform.isWin}
+				type={platform.type}
 			/>
 		{/each}
 	{:else}
@@ -168,7 +173,7 @@
 				bind:position={platform.position}
 				bind:rotation={platform.rotation}
 				index={i}
-				isWin={platform.isWin}
+				type={platform.type}
 			/>
 		{/each}
 	{/if}

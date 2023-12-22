@@ -1,34 +1,49 @@
 <script lang="ts">
-	import Glass from '$lib/components/Glass.svelte';
+	import Glass from '$lib/ui/Glass.svelte';
 	import { page } from '$app/stores';
 	import {
-	canEdit,
+		canEdit,
 		currentLevel,
 		customLevels,
 		firstTime,
+		highscores,
 		levels,
 		playLevel,
 		playingCustomLevel,
 		playingTime,
+		showNewHighscore,
+		showShadows
 	} from './gamestate';
 
 	import { pushState, replaceState } from '$app/navigation';
 
-	import Button from '$lib/components/Button.svelte';
-	import LevelCard from '$lib/components/LevelCard.svelte';
-	import Levels from '$lib/components/Levels.svelte';
+	import Button from '$lib/ui/Button.svelte';
+	import LevelCard from '$lib/ui/LevelCard.svelte';
+	import Levels from '$lib/ui/Levels.svelte';
 	import type { GameState } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
-	function gotoState(state: GameState) {
+	function gotoState(state: GameState, levelPage: number | undefined = undefined) {
 		pushState('', {
-			gameState: state
+			gameState: state,
+			levelPage: levelPage
 		});
+	}
+	function toggleFullscreen() {
+		if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+			document.documentElement.requestFullscreen();
+		} else if (document.exitFullscreen) {
+			document.exitFullscreen();
+		}
+	}
+
+	function toggleShadows() {
+		$showShadows = !$showShadows;
 	}
 </script>
 
-{#if ($page.state.gameState != 'edit' && $page.state.gameState != 'playing') || $playingTime < 0 && !$canEdit}
+{#if ($page.state.gameState != 'edit' && $page.state.gameState != 'playing') || ($playingTime < 0 && !$canEdit)}
 	<div
 		class="fixed inset-0 w-screen h-screen z-10 flex flex-col items-center justify-center px-2 overflow-scroll text-gray-900"
 	>
@@ -45,13 +60,21 @@
 								$firstTime = false;
 								gotoState('gameHelp');
 							} else {
-								gotoState('levels');
+								let i = undefined;
+								// find first not done level
+								for(i = 0; i < levels.length; i++) {
+									if(i >= $highscores.length || $highscores[i] == null) {
+										break;
+									}
+								}
+
+								gotoState('levels', Math.floor(i / 6));
 							}
 						}}>play levels</Button
 					>
 					<Button onClick={() => gotoState('customLevels')}>custom levels</Button>
 					<Button onClick={() => gotoState('gameHelp')}>how to play</Button>
-					<!-- <Button onClick={() => gotoState('settings')}>settings</Button> -->
+					<Button onClick={() => gotoState('settings')}>settings</Button>
 				</div>
 			</Glass>
 		{:else if $page.state.gameState == 'levels'}
@@ -133,29 +156,37 @@
 					well done!
 				</div>
 
+				{#if $showNewHighscore && $highscores[$currentLevel]}
+					<div class="text-emerald-600 font-semibold text-center mb-12 text-xl">
+						new highscore:<br>{$highscores[$currentLevel].toFixed(2)} seconds
+					</div>
+				{/if}
+
 				<div class="w-full max-w-xs mx-auto flex flex-col space-y-6">
 					<Button
 						onClick={() => {
-							playLevel($currentLevel);
+							playLevel($currentLevel, true);
 						}}>play again</Button
 					>
 					<Button
 						onClick={() => {
-							if($playingCustomLevel) {
+							if ($playingCustomLevel) {
 								replaceState('', {
-									gameState: 'customLevels'
+									gameState: 'customLevels',
+									levelPage: Math.floor($currentLevel / 6)
 								});
 							} else {
 								replaceState('', {
-									gameState: 'levels'
+									gameState: 'levels',
+									levelPage: Math.floor($currentLevel / 6)
 								});
 							}
 						}}>back to levels</Button
 					>
-					{#if (!$playingCustomLevel ? $currentLevel < levels.length - 1 : $currentLevel < $customLevels.length - 1)}
+					{#if !$playingCustomLevel ? $currentLevel < levels.length - 1 : $currentLevel < $customLevels.length - 1}
 						<Button
 							onClick={() => {
-								playLevel($currentLevel + 1);
+								playLevel($currentLevel + 1, true);
 							}}>next level</Button
 						>
 					{/if}
@@ -165,6 +196,17 @@
 			<div class="text-9xl font-extrabold tracking-tight text-center rounded-md text-gray-900">
 				{-Math.floor($playingTime)}
 			</div>
+		{:else if $page.state.gameState == 'settings'}
+			<Glass backButton={true} class="w-full max-w-xl px-5 sm:px-10 relative">
+				<div class="text-6xl font-semibold tracking-tight text-center rounded-md mb-12">
+					settings
+				</div>
+
+				<div class="w-full max-w-xs mx-auto flex flex-col space-y-6">
+					<Button onClick={toggleFullscreen}>toggle fullscreen</Button>
+					<Button onClick={toggleShadows}>toggle shadows</Button>
+				</div>
+			</Glass>
 		{/if}
 	</div>
 {/if}
