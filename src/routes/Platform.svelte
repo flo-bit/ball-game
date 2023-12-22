@@ -28,6 +28,7 @@
 	import type { PlatformType } from '$lib/types';
 	import { replaceState } from '$app/navigation';
 	import type { RigidBody } from '@dimforge/rapier3d-compat';
+	import Lines from './Lines.svelte';
 	interactivity();
 
 	export let scale: [number, number, number] = [1, 1, 1];
@@ -60,7 +61,7 @@
 	let colors: Record<PlatformType, THREE.Color | string> = {
 		win: new THREE.Color(0x7dd3fc),
 		normal: new THREE.Color(0xfafaf9),
-		force: new THREE.Color(0xf87171)
+		force: new THREE.Color(0x10b981)
 	};
 
 	export let type: PlatformType = 'normal';
@@ -175,15 +176,7 @@
 
 	{#if type == 'force' && hasPhysics}
 		<T.Object3D position={[0, data.forceHeight ?? 5, 0]}>
-			<T.Mesh receiveShadow>
-				<T.BoxGeometry args={[2 - 0.08, (data.forceHeight ?? 5) * 2, 2 - 0.08]} />
-				<T.MeshStandardMaterial
-					side={THREE.DoubleSide}
-					color={new THREE.Color(0xdc2626)}
-					transparent={true}
-					opacity={0.1}
-				/>
-			</T.Mesh>
+			<Lines height={data.forceHeight}/>
 			<CollisionGroups groups={[type !== 'force' ? 2 : 4]}>
 				<Collider
 					shape={'cuboid'}
