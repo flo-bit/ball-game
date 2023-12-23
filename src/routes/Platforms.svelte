@@ -97,6 +97,12 @@
 			case 'f':
 				newPlatform('force');
 				break;
+			case 'y':
+				newPlatform('slide');
+				break;
+
+			case 'b':
+				newPlatform('bounce');
 
 			case '-':
 				$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];

@@ -61,7 +61,9 @@
 	let colors: Record<PlatformType, THREE.Color | string> = {
 		win: new THREE.Color(0x7dd3fc),
 		normal: new THREE.Color(0xfafaf9),
-		force: new THREE.Color(0x10b981)
+		force: new THREE.Color(0x10b981),
+		bounce: new THREE.Color(0x7c3aed),
+		slide: new THREE.Color(0xf59e0b)
 	};
 
 	export let type: PlatformType = 'normal';
@@ -170,13 +172,19 @@
 	{/if}
 	{#if hasPhysics}
 		<CollisionGroups groups={[2]}>
-			<Collider shape={'cuboid'} args={[1, 1, 1]} type="dynamic" />
+			<Collider
+				shape={'cuboid'}
+				args={[1, 1, 1]}
+				type="dynamic"
+				restitution={type == 'bounce' ? 2 : undefined}
+				friction={type == 'slide' ? 0 : 10000}
+			/>
 		</CollisionGroups>
 	{/if}
 
 	{#if type == 'force' && hasPhysics}
 		<T.Object3D position={[0, data.forceHeight ?? 5, 0]}>
-			<Lines height={data.forceHeight}/>
+			<Lines height={data.forceHeight} />
 			<CollisionGroups groups={[type !== 'force' ? 2 : 4]}>
 				<Collider
 					shape={'cuboid'}

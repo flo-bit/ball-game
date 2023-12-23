@@ -4,6 +4,7 @@
 	import {
 		canEdit,
 		currentLevel,
+		customHighscores,
 		customLevels,
 		firstTime,
 		highscores,
@@ -205,6 +206,10 @@
 				<div class="w-full max-w-xs mx-auto flex flex-col space-y-6">
 					<Button onClick={toggleFullscreen}>toggle fullscreen</Button>
 					<Button onClick={toggleShadows}>toggle shadows</Button>
+					<Button onClick={() => {
+						$highscores = [];
+						$customHighscores = [];
+					}}>reset scores</Button>
 				</div>
 			</Glass>
 		{/if}
