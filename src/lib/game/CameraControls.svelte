@@ -50,7 +50,6 @@
 		domElement.removeEventListener('pointerup', onPointerUp);
 	});
 
-	// This is basically your update function
 	useTask((delta) => {
 		// the object's position is bound to the prop
 		if (!object) return;
@@ -74,6 +73,9 @@
 			$camera.lookAt(currentLookAt);
 		}
 	});
+
+	function rotateCamera(angle: number) {
+	}
 
 	function onPointerMove(event: PointerEvent) {
 		const { x, y } = event;

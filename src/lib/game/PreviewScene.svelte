@@ -2,7 +2,6 @@
 	import type { Platform as PlatformType } from '$lib/types';
 	import { T } from '@threlte/core';
 	import { Align, OrbitControls } from '@threlte/extras';
-	import { Sky } from '@threlte/extras';
 	import Platform from './Platform.svelte';
 
 	export let platforms: PlatformType[] = [];

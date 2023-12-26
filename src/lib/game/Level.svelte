@@ -43,7 +43,6 @@
 	}
 
 	$: setLevelPlatforms($canEdit, $currentLevel, $playingCustomLevel, $platforms);
-
 </script>
 
 {#each levelPlatforms as platform, i}

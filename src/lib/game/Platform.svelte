@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core';
 	import { RoundedBoxGeometry, TransformControls } from '@threlte/extras';
-	import { Edges } from '@threlte/extras';
 
 	// @ts-ignore
 	import type { TransformControls as TC } from 'three/examples/jsm/controls/TransformControls';
 	import { Collider, CollisionGroups } from '@threlte/rapier';
 	import {
-		canEdit,
 		currentLevel,
 		customHighscores,
 		editMode,
