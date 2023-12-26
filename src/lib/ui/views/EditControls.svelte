@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { replaceState } from '$app/navigation';
+	import { pushState, replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
 	import * as Menubar from '$lib/components/ui/menubar';
 	import {
@@ -11,7 +11,8 @@
 		editMode,
 		customLevels,
 		showSaveLevelDialog,
-		startPlatforms
+		startPlatforms,
+		editSpace
 	} from '../../gamestate';
 	import { Input } from '$lib/components/ui/input';
 
@@ -36,7 +37,174 @@
 			$selectedPlatform = $platforms.length - 1;
 		}, 100);
 	}
+
+	function setEditMode(mode: 'translate' | 'rotate' | 'scale') {
+		$editMode = mode;
+	}
+
+	function setEditSpace(space: 'local' | 'world') {
+		$editSpace = space;
+	}
+
+	function copyToClipboard() {
+		navigator.clipboard.writeText(JSON.stringify({ name: 'New Level', platforms: $platforms }));
+	}
+
+	function addStateToHistory() {
+		$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
+	}
+
+	function duplicatePlatform() {
+		addStateToHistory();
+
+		// duplicate
+		if ($selectedPlatform != -1) {
+			$platforms = [...$platforms, { ...$platforms[$selectedPlatform] }];
+			setTimeout(() => {
+				$selectedPlatform = $platforms.length - 1;
+			}, 100);
+		}
+	}
+
+	function deletePlatform() {
+		addStateToHistory();
+
+		// duplicate
+		if ($selectedPlatform != -1) {
+			$platforms = $platforms.filter((_, i) => i != $selectedPlatform);
+			$selectedPlatform = -1;
+		}
+	}
+
+	function undo() {
+		// undo
+		console.log('undo', $platformsHistory.length);
+
+		let last = $platformsHistory.pop();
+		$platformsHistory = [...$platformsHistory];
+		if (last) $platforms = [...last];
+	}
+
+	function redo() {
+		// redo?
+	}
+
+	function clearPlatforms() {
+		$platformsHistory = [window.structuredClone($platforms)];
+
+		$platforms = startPlatforms;
+	}
+
+	function saveLevel() {
+		$customLevels = [
+			...$customLevels,
+			{
+				name: levelName,
+				platforms: $platforms
+			}
+		];
+	}
+
+	function togglePlaying() {
+		$playing = !$playing;
+		if ($playing) {
+			replaceState('', {
+				gameState: 'playing'
+			});
+		} else {
+			replaceState('', {
+				gameState: 'edit'
+			});
+		}
+	}
+
+	function showHelp() {
+		pushState('', {
+			gameState: 'editHelp'
+		});
+	}
 </script>
+
+<svelte:window
+	on:keydown={(ev) => {
+		if ($page.state.gameState != 'edit') return;
+
+		switch (ev.key) {
+			case 'Escape':
+				$selectedPlatform = -1;
+				break;
+			case '?':
+				showHelp();
+				break;
+			case 's':
+				setEditMode('scale');
+				break;
+			case 'r':
+				setEditMode('rotate');
+				break;
+			case 't':
+				setEditMode('translate');
+				break;
+			case 'w':
+				setEditSpace('world');
+				break;
+			case 'l':
+				setEditSpace('local');
+				break;
+			case 'c':
+				// copy to clipboard
+				copyToClipboard();
+				break;
+			case 'p':
+				togglePlaying();
+				break;
+
+			case '+':
+				newPlatform('normal');
+				break;
+
+			case 'g':
+				newPlatform('win');
+				break;
+			case 'f':
+				newPlatform('force');
+				break;
+			case 'y':
+				newPlatform('slide');
+				break;
+
+			case 'b':
+				newPlatform('bounce');
+
+			case '-':
+				deletePlatform();
+				break;
+
+			case 'd':
+				duplicatePlatform();
+				break;
+
+			case 'x':
+				clearPlatforms();
+				break;
+
+			case 'n':
+				$showSaveLevelDialog = true;
+				break;
+
+			case 'z':
+				undo();
+				break;
+
+			case 'y':
+				// redo?
+				break;
+
+			default:
+				break;
+		}
+	}}
+/>
 
 {#if $page.state.gameState == 'edit' || ($page.state.gameState == 'playing' && $canEdit)}
 	<Menubar.Root>
@@ -45,9 +213,7 @@
 			<Menubar.Content>
 				<Menubar.Item
 					on:click={() => {
-						$platformsHistory = [window.structuredClone($platforms)];
-
-						$platforms = startPlatforms;
+						clearPlatforms();
 					}}
 				>
 					clear
@@ -64,9 +230,7 @@
 				</Menubar.Item>
 				<Menubar.Item
 					on:click={() => {
-						navigator.clipboard.writeText(
-							JSON.stringify({ name: 'New Level', platforms: $platforms })
-						);
+						copyToClipboard();
 					}}
 				>
 					share
@@ -78,16 +242,16 @@
 		<Menubar.Menu>
 			<Menubar.Trigger>platform</Menubar.Trigger>
 			<Menubar.Content>
-				<Menubar.Item on:click={() => ($editMode = 'translate')}>
+				<Menubar.Item on:click={() => setEditMode('translate')}>
 					move
 					<Menubar.Shortcut>t</Menubar.Shortcut>
 				</Menubar.Item>
-				<Menubar.Item on:click={() => ($editMode = 'rotate')}>
+				<Menubar.Item on:click={() => setEditMode('rotate')}>
 					rotate
 
 					<Menubar.Shortcut>t</Menubar.Shortcut>
 				</Menubar.Item>
-				<Menubar.Item on:click={() => ($editMode = 'scale')}>
+				<Menubar.Item on:click={() => setEditMode('scale')}>
 					scale
 
 					<Menubar.Shortcut>s</Menubar.Shortcut>
@@ -96,11 +260,9 @@
 				<Menubar.Separator />
 
 				<Menubar.Item
+					disabled={$selectedPlatform < 0}
 					on:click={() => {
-						if ($selectedPlatform == -1) return;
-						$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
-
-						$platforms = $platforms.filter((_, i) => i != $selectedPlatform);
+						deletePlatform();
 					}}
 					>delete
 
@@ -138,13 +300,7 @@
 				<Menubar.Item
 					disabled={$selectedPlatform < 0}
 					on:click={() => {
-						$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
-
-						// duplicate
-						$platforms = [...$platforms, { ...$platforms[$selectedPlatform] }];
-						setTimeout(() => {
-							$selectedPlatform = $platforms.length - 1;
-						}, 100);
+						duplicatePlatform();
 					}}
 					>duplicate
 
@@ -156,31 +312,11 @@
 			<Menubar.Trigger>game</Menubar.Trigger>
 			<Menubar.Content>
 				<Menubar.Item
-					disabled={$page.state.gameState == 'edit'}
 					on:click={() => {
-						if ($page.state.gameState == 'playing') {
-							replaceState('', {
-								gameState: 'edit'
-							});
-							$playing = false;
-						}
+						togglePlaying();
 					}}
 				>
-					edit mode
-					<Menubar.Shortcut>k</Menubar.Shortcut>
-				</Menubar.Item>
-				<Menubar.Item
-					disabled={$page.state.gameState == 'playing'}
-					on:click={() => {
-						if ($page.state.gameState == 'edit') {
-							replaceState('', {
-								gameState: 'playing'
-							});
-							$playing = true;
-						}
-					}}
-				>
-					play mode
+					toggle playing mode
 					<Menubar.Shortcut>p</Menubar.Shortcut>
 				</Menubar.Item>
 			</Menubar.Content>
@@ -197,7 +333,7 @@
 				Give your level a name to save it
 
 				<div class="flex flex-col w-full max-w-sm gap-1.5 mt-2">
-					<Input type="email" id="name" placeholder="Level name" bind:value={levelName} />
+					<Input type="name" id="name" placeholder="Level name" bind:value={levelName} />
 				</div>
 			</AlertDialog.Description>
 		</AlertDialog.Header>
@@ -205,13 +341,7 @@
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 			<AlertDialog.Action
 				on:click={() => {
-					$customLevels = [
-						...$customLevels,
-						{
-							name: levelName,
-							platforms: $platforms
-						}
-					];
+					saveLevel();
 				}}>Continue</AlertDialog.Action
 			>
 		</AlertDialog.Footer>

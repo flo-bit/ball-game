@@ -28,7 +28,7 @@
 	import type { PlatformType } from '$lib/types';
 	import { replaceState } from '$app/navigation';
 	import type { RigidBody } from '@dimforge/rapier3d-compat';
-	import Lines from '../helper/Lines.svelte';
+	import Lines from '../helper/effects/Lines.svelte';
 	interactivity();
 
 	export let scale: [number, number, number] = [1, 1, 1];
