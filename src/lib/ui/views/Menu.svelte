@@ -40,6 +40,14 @@
 	function toggleShadows() {
 		$showShadows = !$showShadows;
 	}
+
+	function requestOrientationPermission() {
+		// @ts-ignore
+		if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+			// @ts-ignore
+			DeviceOrientationEvent.requestPermission();
+		}
+	}
 </script>
 
 {#if ($page.state.gameState != 'edit' && $page.state.gameState != 'playing') || ($playingTime < 0 && !$canEdit)}
@@ -55,19 +63,21 @@
 				<div class="w-full max-w-xs mx-auto flex flex-col space-y-6">
 					<Button
 						onClick={() => {
+							requestOrientationPermission();
+
 							if ($firstTime) {
 								$firstTime = false;
 								gotoState('gameHelp');
 							} else {
 								let i = undefined;
 								// find first not done level
-								for(i = 0; i < levels.length; i++) {
-									if(i >= $highscores.length || $highscores[i] == null) {
+								for (i = 0; i < levels.length; i++) {
+									if (i >= $highscores.length || $highscores[i] == null) {
 										break;
 									}
 								}
 
-								gotoState('levels', Math.max(Math.floor((i-1) / 6), 0));
+								gotoState('levels', Math.max(Math.floor((i - 1) / 6), 0));
 							}
 						}}>play levels</Button
 					>
@@ -157,7 +167,7 @@
 
 				{#if $showNewHighscore && $highscores[$currentLevel]}
 					<div class="text-emerald-600 font-semibold text-center mb-12 text-xl">
-						new highscore:<br>{$highscores[$currentLevel].toFixed(2)} seconds
+						new highscore:<br />{$highscores[$currentLevel].toFixed(2)} seconds
 					</div>
 				{/if}
 
@@ -204,10 +214,12 @@
 				<div class="w-full max-w-xs mx-auto flex flex-col space-y-6">
 					<Button onClick={toggleFullscreen}>toggle fullscreen</Button>
 					<Button onClick={toggleShadows}>toggle shadows</Button>
-					<Button onClick={() => {
-						$highscores = [];
-						$customHighscores = [];
-					}}>reset scores</Button>
+					<Button
+						onClick={() => {
+							$highscores = [];
+							$customHighscores = [];
+						}}>reset scores</Button
+					>
 				</div>
 			</Glass>
 		{/if}

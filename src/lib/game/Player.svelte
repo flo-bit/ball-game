@@ -12,10 +12,13 @@
 		playingTime,
 		playLevel,
 		canEdit,
-		playerPosition,
+		playerPosition
 	} from '../gamestate';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
+
+	import interact from 'interactjs';
 
 	export let position: [number, number, number] = [0, 5, 0];
 	export let radius = 0.5;
@@ -33,15 +36,7 @@
 
 	let sphere: Group;
 	let sphereRef: Group | undefined;
-	$: if (sphere) {
-		sphereRef = sphere;
-	}
 	let rigidBody: RapierRigidBody;
-
-	let forward = 0;
-	let backward = 0;
-	let left = 0;
-	let right = 0;
 
 	let up = 0;
 
@@ -50,17 +45,9 @@
 	let grounded = false;
 
 	let playingLevel = $currentLevel;
-	$: if (playingLevel != $currentLevel) {
-		playingLevel = $currentLevel;
-		if (rigidBody) {
-			rigidBody.setTranslation({ x: 0, y: 5, z: 0 }, true);
-			rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
-			rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
-		}
-	}
 
-	$: if (pressedJump > 0 && grounded) {
-		actualJump();
+	function calculateMovement() {
+		return [leftMotion - rightMotion, up * jumpForce, forwardMotion - backwardMotion];
 	}
 
 	useTask((delta) => {
@@ -81,7 +68,7 @@
 
 		if (!rigidBody || !sphere) return;
 		// get direction
-		const velVec = temp.fromArray([left - right, up * jumpForce, forward - backward]); // left - right
+		const velVec = temp.fromArray(calculateMovement());
 		if (up > 0) {
 			nicerTimer = 0;
 		}
@@ -138,23 +125,26 @@
 		}
 	}
 
-	$: isPlaying = $page.state.gameState == 'playing' && $playing && ($playingTime > 0 || $canEdit);
+	let forwardMotion = 0;
+	let backwardMotion = 0;
+	let leftMotion = 0;
+	let rightMotion = 0;
 
 	function onKeyDown(e: KeyboardEvent) {
 		if (!isPlaying) return;
 
 		switch (e.key) {
 			case 's':
-				backward = 1;
+				backwardMotion = 1;
 				break;
 			case 'w':
-				forward = 1;
+				forwardMotion = 1;
 				break;
 			case 'a':
-				left = 1;
+				leftMotion = 1;
 				break;
 			case 'd':
-				right = 1;
+				rightMotion = 1;
 				break;
 			case ' ':
 				jump();
@@ -176,16 +166,16 @@
 
 		switch (e.key) {
 			case 's':
-				backward = 0;
+				backwardMotion = 0;
 				break;
 			case 'w':
-				forward = 0;
+				forwardMotion = 0;
 				break;
 			case 'a':
-				left = 0;
+				leftMotion = 0;
 				break;
 			case 'd':
-				right = 0;
+				rightMotion = 0;
 				break;
 			case '1':
 				$showDebug = !$showDebug;
@@ -194,51 +184,6 @@
 				break;
 		}
 	}
-
-	let currentTouch: Touch | undefined = undefined;
-
-	function onTouchStart(e: TouchEvent) {
-		console.log(e);
-		if (e.touches.length == 1) {
-			currentTouch = e.touches[0];
-		} else {
-			// jump
-			up = 1;
-		}
-	}
-
-	function onTouchEnd(e: TouchEvent) {
-		if (e.touches.length == 0) {
-			currentTouch = undefined;
-			backward = 0;
-			forward = 0;
-		}
-	}
-
-	function onTouchMove(e: TouchEvent) {
-		if (currentTouch) {
-			console.log(e);
-			const touch = e.touches[0];
-			const dx = touch.clientX - currentTouch.clientX;
-			const dy = touch.clientY - currentTouch.clientY;
-
-			if (Math.abs(dx) < Math.abs(dy)) {
-				if (dy > 0) {
-					backward = 1;
-					forward = 0;
-				} else {
-					backward = 0;
-					forward = 1;
-				}
-			}
-		}
-	}
-	/*
-	on:touchstart|preventDefault={onTouchStart}
-	on:touchcancel={onTouchEnd}
-	on:touchend={onTouchEnd}
-	on:touchmove={onTouchMove}
-	*/
 
 	const material = new MeshStandardMaterial();
 	material.onBeforeCompile = (shader) => {
@@ -298,9 +243,102 @@ vec3 marble(vec3 vPos) {
 			`vec4 diffuseColor = vec4(marble(vPos), opacity );`
 		);
 	};
+
+	// Variables to store initial orientation
+	let initialAlpha = 0,
+		initialBeta = 0,
+		initialGamma = 0;
+	let isCalibrated = false;
+
+	const minOrientationThreshold = 3;
+	const maxOrientationThreshold = 10;
+
+	// Function to handle device orientation event
+	function handleOrientation(event: DeviceOrientationEvent) {
+		if (!isCalibrated) {
+			// Calibrate the initial orientation
+			initialAlpha = event.alpha ?? 0;
+			initialBeta = event.beta ?? 0;
+			initialGamma = event.gamma ?? 0;
+			isCalibrated = true;
+		} else {
+			// Calculate relative orientation
+			const relativeAlpha = (event.alpha ?? 0) - initialAlpha;
+			const relativeBeta = (event.beta ?? 0) - initialBeta;
+			const relativeGamma = (event.gamma ?? 0) - initialGamma;
+
+			// Map the relative orientation to game controls
+			// Adjust these thresholds and mappings as needed for your game
+			if (relativeBeta < -minOrientationThreshold) {
+				forwardMotion =
+					(Math.abs(relativeBeta) - minOrientationThreshold) /
+					(maxOrientationThreshold - minOrientationThreshold);
+			} else {
+				forwardMotion = 0;
+			}
+			forwardMotion = Math.min(1, forwardMotion);
+
+			if (relativeBeta > minOrientationThreshold) {
+				backwardMotion =
+					(Math.abs(relativeBeta) - minOrientationThreshold) /
+					(maxOrientationThreshold - minOrientationThreshold);
+			} else {
+				backwardMotion = 0;
+			}
+			backwardMotion = Math.min(1, backwardMotion);
+
+			if (relativeGamma > minOrientationThreshold) {
+				rightMotion =
+					(Math.abs(relativeGamma) - minOrientationThreshold) /
+					(maxOrientationThreshold - minOrientationThreshold);
+			} else {
+				rightMotion = 0;
+			}
+			rightMotion = Math.min(1, rightMotion);
+
+			if (relativeGamma < -minOrientationThreshold) {
+				leftMotion =
+					(Math.abs(relativeGamma) - minOrientationThreshold) /
+					(maxOrientationThreshold - minOrientationThreshold);
+			} else {
+				leftMotion = 0;
+			}
+			leftMotion = Math.min(1, leftMotion);
+		}
+	}
+
+	$: isPlaying = $page.state.gameState == 'playing' && $playing && ($playingTime > 0 || $canEdit);
+
+	$: if (sphere) {
+		sphereRef = sphere;
+	}
+
+	$: if (playingLevel != $currentLevel) {
+		//isCalibrated = false;
+		playingLevel = $currentLevel;
+		if (rigidBody) {
+			rigidBody.setTranslation({ x: 0, y: 5, z: 0 }, true);
+			rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+			rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+		}
+	}
+
+	$: if (pressedJump > 0 && grounded) {
+		actualJump();
+	}
+
+	onMount(() => {
+		interact(window.document.body).on('tap', function () {
+			jump();
+		});
+	});
 </script>
 
-<svelte:window on:keydown|preventDefault={onKeyDown} on:keyup={onKeyUp} />
+<svelte:window
+	on:keydown|preventDefault={onKeyDown}
+	on:keyup={onKeyUp}
+	on:deviceorientation={handleOrientation}
+/>
 
 <T.PerspectiveCamera makeDefault fov={90}>
 	<Controller bind:object={sphereRef} />

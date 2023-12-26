@@ -4,6 +4,8 @@
 	import { Camera, Vector2, Vector3, Quaternion, Group } from 'three';
 	import { useThrelte, useParent, useTask } from '@threlte/core';
 
+	const { invalidate } = useThrelte();
+
 	export let object: Group | undefined;
 	export let rotateSpeed = 1.0;
 
@@ -12,8 +14,6 @@
 
 	const currentPosition = new Vector3();
 	const currentLookAt = new Vector3();
-
-	let isOrbiting = false;
 	let pointerDown = false;
 
 	const rotateStart = new Vector2();
@@ -23,11 +23,7 @@
 	const axis = new Vector3(0, 1, 0);
 	const rotationQuat = new Quaternion();
 
-	const { renderer, invalidate } = useThrelte();
-
-	const domElement = renderer.domElement;
 	const camera = useParent();
-
 	const dispatch = createEventDispatcher();
 
 	const isCamera = (p: any): p is Camera => {
@@ -37,18 +33,6 @@
 	if (!isCamera($camera)) {
 		throw new Error('Parent missing: <PointerLockControls> need to be a child of a <Camera>');
 	}
-
-	domElement.addEventListener('pointerdown', onPointerDown);
-	domElement.addEventListener('pointermove', onPointerMove);
-	domElement.addEventListener('pointerleave', onPointerLeave);
-	domElement.addEventListener('pointerup', onPointerUp);
-
-	onDestroy(() => {
-		domElement.removeEventListener('pointerdown', onPointerDown);
-		domElement.removeEventListener('pointermove', onPointerMove);
-		domElement.removeEventListener('pointerleave', onPointerLeave);
-		domElement.removeEventListener('pointerup', onPointerUp);
-	});
 
 	useTask((delta) => {
 		// the object's position is bound to the prop
@@ -74,23 +58,26 @@
 		}
 	});
 
+	function vectorFromObject(vec: { x: number; y: number; z: number }) {
+		if (!object) return new Vector3(0, 0, 0);
+
+		const { x, y, z } = vec;
+		const ideal = new Vector3(x, y, z);
+		ideal.applyQuaternion(object.quaternion);
+		ideal.add(new Vector3(object.position.x, object.position.y, object.position.z));
+		return ideal;
+	}
+
 	function rotateCamera(angle: number) {
+		rotateDelta.x = angle;
 	}
 
 	function onPointerMove(event: PointerEvent) {
 		const { x, y } = event;
-		if (pointerDown && !isOrbiting) {
-			// calculate distance from init down
-			const distCheck =
-				Math.sqrt(Math.pow(x - rotateStart.x, 2) + Math.pow(y - rotateStart.y, 2)) > 10;
-			if (distCheck) {
-				isOrbiting = true;
-			}
-		}
-		if (!isOrbiting) return;
+		if (!pointerDown) return;
 
 		rotateEnd.set(x, y);
-		rotateDelta.subVectors(rotateEnd, rotateStart).multiplyScalar(rotateSpeed);
+		rotateCamera((rotateEnd.x - rotateStart.x) * rotateSpeed);
 		rotateStart.copy(rotateEnd);
 
 		invalidate();
@@ -106,45 +93,15 @@
 	function onPointerUp() {
 		rotateDelta.set(0, 0);
 		pointerDown = false;
-		isOrbiting = false;
-	}
-
-	function onPointerLeave() {
-		rotateDelta.set(0, 0);
-		pointerDown = false;
-		isOrbiting = false;
-	}
-
-	function vectorFromObject(vec: { x: number; y: number; z: number }) {
-		if (!object) return new Vector3(0, 0, 0);
-
-		const { x, y, z } = vec;
-		const ideal = new Vector3(x, y, z);
-		ideal.applyQuaternion(object.quaternion);
-		ideal.add(new Vector3(object.position.x, object.position.y, object.position.z));
-		return ideal;
 	}
 
 	function onKeyDown(event: KeyboardEvent) {
 		switch (event.key) {
 			case 'q':
-				rotateDelta.x = -2 * rotateSpeed;
+				rotateCamera(-2 * rotateSpeed);
 				break;
 			case 'e':
-				rotateDelta.x = 2 * rotateSpeed;
-				break;
-			default:
-				break;
-		}
-	}
-
-	function onKeyUp(event: KeyboardEvent) {
-		switch (event.key) {
-			case 'q':
-				rotateDelta.x = 0;
-				break;
-			case 'e':
-				rotateDelta.x = 0;
+				rotateCamera(2 * rotateSpeed);
 				break;
 			default:
 				break;
@@ -152,4 +109,11 @@
 	}
 </script>
 
-<svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} />
+<svelte:window
+	on:keydown={onKeyDown}
+	on:pointerdown={onPointerDown}
+	on:pointerleave={onPointerUp}
+	on:pointerup={onPointerUp}
+	on:pointercancel={onPointerUp}
+	on:pointermove={onPointerMove}
+/>

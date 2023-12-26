@@ -10,7 +10,7 @@
 </script>
 
 
-<div class="fixed w-screen h-screen -z-10">
+<div class="fixed w-screen h-screen -z-10 overflow-hidden">
 	<Canvas>
 		<World>
 			<Scene />
