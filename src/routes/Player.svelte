@@ -70,7 +70,7 @@
 	useTask((delta) => {
 		$playingTime += delta;
 
-		if ($page.state.gameState !== 'playing') {
+		if ($page.state.gameState !== 'playing' && rigidBody) {
 			rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
 			rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
 			return;

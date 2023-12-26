@@ -69,7 +69,7 @@
 									}
 								}
 
-								gotoState('levels', Math.floor(i / 6));
+								gotoState('levels', Math.max(Math.floor((i-1) / 6), 0));
 							}
 						}}>play levels</Button
 					>
