@@ -12,7 +12,7 @@
 		customLevels,
 		showSaveLevelDialog,
 		startPlatforms
-	} from './gamestate';
+	} from '../../gamestate';
 	import { Input } from '$lib/components/ui/input';
 
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';

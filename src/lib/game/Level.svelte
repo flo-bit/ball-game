@@ -18,7 +18,7 @@
 		startPlatforms,
 		platformsHistory,
 		showSaveLevelDialog
-	} from './gamestate';
+	} from '../gamestate';
 	import type { PlatformType } from '$lib/types';
 
 	function newPlatform(type: PlatformType) {

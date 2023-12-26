@@ -20,7 +20,7 @@
 		selectedPlatform,
 		showNewHighscore,
 		playing
-	} from './gamestate';
+	} from '../gamestate';
 	import * as THREE from 'three';
 
 	import { interactivity } from '@threlte/extras';
@@ -28,7 +28,7 @@
 	import type { PlatformType } from '$lib/types';
 	import { replaceState } from '$app/navigation';
 	import type { RigidBody } from '@dimforge/rapier3d-compat';
-	import Lines from './Lines.svelte';
+	import Lines from '../helper/Lines.svelte';
 	interactivity();
 
 	export let scale: [number, number, number] = [1, 1, 1];

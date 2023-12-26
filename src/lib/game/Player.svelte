@@ -17,7 +17,7 @@
 		playingCustomLevel,
 		playerPosition,
 		showNewHighscore
-	} from './gamestate';
+	} from '../gamestate';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
 

@@ -1,4 +1,4 @@
-import { localStorageStore } from '$lib/LocalStorageStore/LocalStorageStore';
+import { localStorageStore } from '$lib/helper/LocalStorageStore/LocalStorageStore';
 import { writable, type Writable } from 'svelte/store';
 import type { Platform, Level } from '$lib/types';
 import { pushState, replaceState } from '$app/navigation';

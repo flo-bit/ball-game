@@ -2,10 +2,9 @@
 	import { Canvas } from '@threlte/core';
 	import { World } from '@threlte/rapier';
 
-	import Scene from './Scene.svelte';
-	import Menu from './Menu.svelte';
-	import { currentLevel } from './gamestate';
-	import EditControls from './EditControls.svelte';
+	import Scene from '$lib/game/Scene.svelte';
+	import Menu from '$lib/ui/views/Menu.svelte';
+	import EditControls from '$lib/ui/views/EditControls.svelte';
 
 	import * as ContextMenu from '$lib/components/ui/context-menu';
 </script>

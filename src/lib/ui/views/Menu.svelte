@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Glass from '$lib/ui/Glass.svelte';
 	import { page } from '$app/stores';
 	import {
 		canEdit,
@@ -14,16 +13,15 @@
 		playingTime,
 		showNewHighscore,
 		showShadows
-	} from './gamestate';
+	} from '../../gamestate';
 
 	import { pushState, replaceState } from '$app/navigation';
 
-	import Button from '$lib/ui/Button.svelte';
-	import LevelCard from '$lib/ui/LevelCard.svelte';
-	import Levels from '$lib/ui/Levels.svelte';
+	import Button from '../elements/Button.svelte';
+	import Glass from '../elements/Glass.svelte';
+	import Levels from '../elements/MenuLevels.svelte';
+
 	import type { GameState } from '$lib/types';
-	import { onMount } from 'svelte';
-	import { fly } from 'svelte/transition';
 
 	function gotoState(state: GameState, levelPage: number | undefined = undefined) {
 		pushState('', {

@@ -7,7 +7,7 @@
 	import { Debug } from '@threlte/rapier';
 
 	import Player from './Player.svelte';
-	import Platforms from './Platforms.svelte';
+	import Platforms from './Level.svelte';
 
 	import {
 		currentLevel,
@@ -16,10 +16,10 @@
 		showShadows,
 		platforms,
 		selectedPlatform
-	} from './gamestate';
+	} from '../gamestate';
 
 	import { onMount } from 'svelte';
-	import CustomRenderer from './CustomRenderer.svelte';
+	import CustomRenderer from '../helper/CustomRenderer.svelte';
 
 	import Stats from 'stats.js';
 	import { page } from '$app/stores';

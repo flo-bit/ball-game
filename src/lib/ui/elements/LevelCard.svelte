@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Level } from '$lib/types';
 	import { Canvas } from '@threlte/core';
-	import { highscores, platforms } from '../../routes/gamestate';
-	import PreviewScene from '../../routes/PreviewScene.svelte';
+	import { highscores, platforms } from '../../gamestate';
+	import PreviewScene from '../../game/PreviewScene.svelte';
 
 	export let onClick: () => void;
 

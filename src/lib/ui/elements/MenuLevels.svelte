@@ -1,6 +1,6 @@
 <script lang="ts">
 	import LevelCard from './LevelCard.svelte';
-	import type { Level } from '../types';
+	import type { Level } from '../../types';
 	import { pushState } from '$app/navigation';
 	import {
 		canEdit,
@@ -10,7 +10,7 @@
 
 		selectedPlatform
 
-	} from '../../routes/gamestate';
+	} from '../../gamestate';
 	import SmallButton from './SmallButton.svelte';
 	import { page } from '$app/stores';
 
