@@ -50,7 +50,8 @@ export const levels: Level[] = [
 			{
 				scale: [4, 0.5, 11.39683540432216],
 				position: [0, 0, -7.164888403988531],
-				rotation: [0, 0, 0, 'XYZ']
+				rotation: [0, 0, 0, 'XYZ'],
+				type: 'start'
 			},
 			{
 				scale: [4, 0.5, 4],
@@ -69,9 +70,17 @@ export const levels: Level[] = [
 		name: 'jumps',
 		platforms: [
 			{ scale: [4, 0.5, 4], position: [0, 0, -40], rotation: [0, 0, 0, 'XYZ'], type: 'win' },
-			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
-			{ position: [0, 0, -13.031173638120949], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
-			{ position: [0, 0, -25.96303713055015], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] }
+			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'], type: 'start' },
+			{
+				position: [0, 0, -13.031173638120949],
+				scale: [4, 0.5, 4],
+				rotation: [0, 0, 0, 'XYZ']
+			},
+			{
+				position: [0, 0, -25.96303713055015],
+				scale: [4, 0.5, 4],
+				rotation: [0, 0, 0, 'XYZ']
+			}
 		]
 	},
 	{
@@ -83,7 +92,7 @@ export const levels: Level[] = [
 				rotation: [0, 0, 0.29790196078633, 'XYZ'],
 				type: 'win'
 			},
-			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'] },
+			{ position: [0, 0, 0], scale: [4, 0.5, 4], rotation: [0, 0, 0, 'XYZ'], type: 'start' },
 			{
 				position: [0, 0, -13.031173638120949],
 				scale: [4, 0.5, 4],

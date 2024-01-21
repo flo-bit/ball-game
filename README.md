@@ -17,14 +17,20 @@ Try it out [here](https://flo-bit.github.io/ball-game/).
 - [x] Add time keeping and local highscores
 - [x] show "new highscore" when you get a new highscore
 
-- [ ] capture mouse in game
+- [ ] automatically capture mouse in game
 - [ ] Add more levels
+- [ ] Add mobile controls: touch joystick
+- [ ] Add gamepad support
+- [ ] Add sound effects + music (+ toggle on/off in settings)
+- [ ] add pause menu
+- [ ] improve physics (difference between in the air and on the ground)
+- [ ] refactor level selection (currently breaks sometimes)
+
+## low prio
+
 - [ ] Add sharing levels (import/export) maybe using links?
 - [ ] Add different balls
 - [ ] Add different platforms / forces
-- [ ] Add mobile controls: joystick or tilt
-- [ ] Add gamepad support
-- [ ] Add sound effects + music (+ toggle on/off in settings)
 - [ ] REFACTOR (later :P)
 
 

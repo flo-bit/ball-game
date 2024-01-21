@@ -41,29 +41,29 @@
 		$showShadows = !$showShadows;
 	}
 
-	function requestOrientationPermission() {
-		// @ts-ignore
-		if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-			// @ts-ignore
-			DeviceOrientationEvent.requestPermission();
-		}
-	}
+	// function requestOrientationPermission() {
+	// 	// @ts-ignore
+	// 	if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+	// 		// @ts-ignore
+	// 		DeviceOrientationEvent.requestPermission();
+	// 	}
+	// }
 </script>
 
-{#if ($page.state.gameState != 'edit' && $page.state.gameState != 'playing') || ($playingTime < 0 && !$canEdit)}
+{#if ($page.state.gameState != 'edit' && $page.state.gameState != 'playing' && $page.state.gameState != 'levels') || ($playingTime < 0 && !$canEdit)}
 	<div
 		class="fixed inset-0 w-screen h-screen z-10 flex flex-col items-center justify-center px-2 overflow-scroll text-gray-900"
 	>
 		{#if !$page.state.gameState || $page.state.gameState == 'menu'}
 			<Glass credits={true} class="w-full max-w-xl px-5 sm:px-10 relative">
 				<div class="text-6xl font-semibold tracking-tight text-center rounded-md mb-16">
-					ball game
+					marblellous
 				</div>
 
 				<div class="w-full max-w-xs mx-auto flex flex-col space-y-6">
 					<Button
 						onClick={() => {
-							requestOrientationPermission();
+							//requestOrientationPermission();
 
 							if ($firstTime) {
 								$firstTime = false;
@@ -79,21 +79,21 @@
 
 								gotoState('levels', Math.max(Math.floor((i - 1) / 6), 0));
 							}
-						}}>play levels</Button
+						}}>play</Button
 					>
-					<Button onClick={() => gotoState('customLevels')}>custom levels</Button>
-					<Button onClick={() => gotoState('gameHelp')}>how to play</Button>
+					<!-- <Button onClick={() => gotoState('customLevels')}>custom levels</Button> -->
+					<Button onClick={() => gotoState('gameHelp')}>tutorial</Button>
 					<Button onClick={() => gotoState('settings')}>settings</Button>
 				</div>
 			</Glass>
-		{:else if $page.state.gameState == 'levels'}
+			<!-- {:else if $page.state.gameState == 'levels'}
 			<Glass backButton={true} class="w-full max-w-xl px-5 sm:px-10 relative">
 				<Levels {levels} />
 			</Glass>
 		{:else if $page.state.gameState == 'customLevels'}
 			<Glass backButton={true} class="w-full max-w-xl px-5 sm:px-10 relative">
 				<Levels levels={$customLevels} customLevels={true} />
-			</Glass>
+			</Glass> -->
 		{:else if $page.state.gameState == 'editHelp'}
 			<Glass backButton={true} class="w-full max-w-xl px-5 sm:px-10 relative">
 				<div class="text-4xl font-semibold">HELP</div>
@@ -223,6 +223,50 @@
 				</div>
 			</Glass>
 		{/if}
+	</div>
+{/if}
+
+{#if $page.state.gameState == 'levels'}
+	<div class="fixed z-10 flex w-full items-center justify-center px-2 text-gray-900 bottom-0">
+		<div
+			class="text-xl bg-white/50 backdrop-blur-sm p-4 rounded-t-xl flex flex-col gap-4 font-semibold"
+		>
+			<div class="flex gap-4">
+				<button
+					on:click={() => {
+						$currentLevel = Math.max(0, $currentLevel - 1);
+					}}
+					class="disabled:opacity-50 disabled:cursor-not-allowed">Prev</button
+				>
+				<div>Level X</div>
+				<button
+					on:click={() => {
+						playLevel($currentLevel, false);
+					}}>Play</button
+				>
+				<button
+					on:click={() => {
+						$currentLevel = Math.min(levels.length - 1, $currentLevel + 1);
+					}}
+					class="disabled:opacity-50 disabled:cursor-not-allowed">Next</button
+				>
+			</div>
+			<div class="text-sm font-normal">
+
+				<div class="flex justify-between">
+					<div>Your mom</div>
+					<div>10.0</div>
+				</div>
+				<div class="flex justify-between">
+					<div>Your mom</div>
+					<div>10.0</div>
+				</div>
+				<div class="flex justify-between">
+					<div>Your mom</div>
+					<div>10.0</div>
+				</div>
+			</div>
+		</div>
 	</div>
 {/if}
 
