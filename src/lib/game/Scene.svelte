@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { T, useTask } from '@threlte/core';
-	import { OrbitControls, Environment, Text, Align } from '@threlte/extras';
+	import { OrbitControls, Environment, Text, Align, AudioListener, Audio } from '@threlte/extras';
 	import Sky from './backgrounds/Sky/Sky.svelte';
 	import Space from './backgrounds/Space/Space.svelte';
 	import { Debug } from '@threlte/rapier';
@@ -13,8 +13,6 @@
 	import Level from './Level.svelte';
 
 	// import Splat from './backgrounds/gaussian/Splat.svelte';
-
-
 
 	import {
 		currentLevel,
@@ -95,17 +93,21 @@
 	on:keyup={onKeyUp}
 />
 
+<AudioListener />
+
+<Audio src="/audio/background.mp3" autoplay loop volume={0.5} />
+
 {#if $showDebug}
 	<Debug />
 {/if}
 
-{#if $page.state.gameState !== 'edit' && $page.state.gameState !== 'levels'}
+{#if $page.state.gameState == 'playing'}
 	{#if $currentLevel >= 0}
 		<Player />
 	{/if}
-{:else if $page.state.gameState == 'levels'}
-	<T.PerspectiveCamera makeDefault position={[30, 20, 10]} fov={80} near={0.1} far={1000}>
-		<OrbitControls autoRotate autoRotateSpeed={1.0}></OrbitControls>
+{:else if $page.state.gameState !== 'edit'}
+	<T.PerspectiveCamera makeDefault position={[50, 30, 17]} fov={80} near={0.1} far={1000}>
+		<OrbitControls autoRotate autoRotateSpeed={1.0} allowPan={false} maxDistance={200.0} minDistance={10.0}></OrbitControls>
 	</T.PerspectiveCamera>
 {:else}
 	<!-- indicator for player spawn -->
@@ -127,20 +129,9 @@
 		<Level />
 </T.Object3D>
 
-<!-- <Sky /> -->
+<Sky />
 
-<Space />
-
-<!-- <Splat /> -->
-
-<!-- <Environment
-  files="Belfast.hdr"
-  isBackground={true}
-  format={'ldr'}
-  encoding={LinearEncoding}
-  groundProjection={{ radius: 200, height: 5, scale: { x: 100, y: 100, z: 100 } }}
-/> -->
-
+<!-- <Space /> -->
 
 <T.Object3D bind:ref={target} position={$playerPosition}></T.Object3D>
 

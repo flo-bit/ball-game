@@ -19,9 +19,20 @@
 
 	import Button from '../elements/Button.svelte';
 	import Glass from '../elements/Glass.svelte';
-	import Levels from '../elements/MenuLevels.svelte';
 
 	import type { GameState } from '$lib/types';
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		let i;
+		for (i = 0; i < levels.length; i++) {
+			if (i >= $highscores.length || $highscores[i] == null) {
+				break;
+			}
+		}
+		console.log(i);
+		$currentLevel = Math.min(Math.max(i, 0), levels.length - 1);
+	});
 
 	function gotoState(state: GameState, levelPage: number | undefined = undefined) {
 		pushState('', {
@@ -40,14 +51,6 @@
 	function toggleShadows() {
 		$showShadows = !$showShadows;
 	}
-
-	// function requestOrientationPermission() {
-	// 	// @ts-ignore
-	// 	if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-	// 		// @ts-ignore
-	// 		DeviceOrientationEvent.requestPermission();
-	// 	}
-	// }
 </script>
 
 {#if ($page.state.gameState != 'edit' && $page.state.gameState != 'playing' && $page.state.gameState != 'levels') || ($playingTime < 0 && !$canEdit)}
@@ -56,15 +59,13 @@
 	>
 		{#if !$page.state.gameState || $page.state.gameState == 'menu'}
 			<Glass credits={true} class="w-full max-w-xl px-5 sm:px-10 relative">
-				<div class="text-6xl font-semibold tracking-tight text-center rounded-md mb-16">
-					marblellous
+				<div class="text-6xl font-semibold tracking-tight text-center rounded-md mb-16 ">
+					marble<wbr>llous
 				</div>
 
 				<div class="w-full max-w-xs mx-auto flex flex-col space-y-6">
 					<Button
 						onClick={() => {
-							//requestOrientationPermission();
-
 							if ($firstTime) {
 								$firstTime = false;
 								gotoState('gameHelp');
@@ -82,18 +83,12 @@
 						}}>play</Button
 					>
 					<!-- <Button onClick={() => gotoState('customLevels')}>custom levels</Button> -->
+					<div class="flex gap-2">
 					<Button onClick={() => gotoState('gameHelp')}>tutorial</Button>
 					<Button onClick={() => gotoState('settings')}>settings</Button>
 				</div>
+				</div>
 			</Glass>
-			<!-- {:else if $page.state.gameState == 'levels'}
-			<Glass backButton={true} class="w-full max-w-xl px-5 sm:px-10 relative">
-				<Levels {levels} />
-			</Glass>
-		{:else if $page.state.gameState == 'customLevels'}
-			<Glass backButton={true} class="w-full max-w-xl px-5 sm:px-10 relative">
-				<Levels levels={$customLevels} customLevels={true} />
-			</Glass> -->
 		{:else if $page.state.gameState == 'editHelp'}
 			<Glass backButton={true} class="w-full max-w-xl px-5 sm:px-10 relative">
 				<div class="text-4xl font-semibold">HELP</div>
@@ -148,8 +143,7 @@
 						<div>
 							<p class="text-3xl">camera</p>
 							<div class="text-base font-semibold mb-5 mt-2">
-								<p>click and drag to rotate or</p>
-								<p>use q and e</p>
+								<p>move mouse to rotate</p>
 							</div>
 						</div>
 					</div>
@@ -226,46 +220,103 @@
 	</div>
 {/if}
 
-{#if $page.state.gameState == 'levels'}
-	<div class="fixed z-10 flex w-full items-center justify-center px-2 text-gray-900 bottom-0">
-		<div
-			class="text-xl bg-white/50 backdrop-blur-sm p-4 rounded-t-xl flex flex-col gap-4 font-semibold"
+{#if $page.state.gameState == 'levels' && $currentLevel >= 0}
+	<div class="fixed w-full justify-center flex top-2">
+		<button
+			class="opacity-80 hover:opacity-100 transition-opacity duration-100"
+			on:click={() => {
+				replaceState('', {
+					gameState: 'menu'
+				});
+			}}
 		>
-			<div class="flex gap-4">
-				<button
-					on:click={() => {
-						$currentLevel = Math.max(0, $currentLevel - 1);
-					}}
-					class="disabled:opacity-50 disabled:cursor-not-allowed">Prev</button
-				>
-				<div>Level X</div>
-				<button
-					on:click={() => {
-						playLevel($currentLevel, false);
-					}}>Play</button
-				>
-				<button
-					on:click={() => {
-						$currentLevel = Math.min(levels.length - 1, $currentLevel + 1);
-					}}
-					class="disabled:opacity-50 disabled:cursor-not-allowed">Next</button
-				>
-			</div>
-			<div class="text-sm font-normal">
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				viewBox="0 0 24 24"
+				fill="currentColor"
+				class="w-8 h-8"
+			>
+				<path
+					d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 0 1.06-1.061l-8.689-8.69a2.25 2.25 0 0 0-3.182 0l-8.69 8.69a.75.75 0 1 0 1.061 1.06l8.69-8.689Z"
+				/>
+				<path
+					d="m12 5.432 8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75H5.625a1.875 1.875 0 0 1-1.875-1.875v-6.198a2.29 2.29 0 0 0 .091-.086L12 5.432Z"
+				/>
+			</svg>
+		</button>
+	</div>
 
-				<div class="flex justify-between">
-					<div>Your mom</div>
-					<div>10.0</div>
-				</div>
-				<div class="flex justify-between">
-					<div>Your mom</div>
-					<div>10.0</div>
-				</div>
-				<div class="flex justify-between">
-					<div>Your mom</div>
-					<div>10.0</div>
-				</div>
+	<div class="fixed z-10 flex w-full justify-center px-2 text-gray-900 bottom-0">
+		<div
+			class="text-2xl bg-white/50 backdrop-blur-sm py-12 px-16 rounded-t-xl flex flex-col gap-4 font-semibold w-full"
+		>
+			<div class="flex flex-col w-full gap-4">
+				<div class="text-4xl">Level {$currentLevel + 1}</div>
+				<div class="text-2xl font-base italic">"{levels[$currentLevel].name}"</div>
 			</div>
+			<div class="text-sm font-normal pt-2 flex justify-between">
+				<div>No highscore</div>
+				<div>10.0</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="fixed inset-0 flex justify-between items-center z-10 pointer-events-none">
+		<div class="flex gap-4 justify-between w-full py-4">
+			<button
+				on:click={() => {
+					$currentLevel = Math.max(0, $currentLevel - 1);
+				}}
+				class="disabled:opacity-30 disabled:cursor-not-allowed pointer-events-auto hover:opacity-50 transition-opacity duration-100"
+				disabled={$currentLevel <= 0}
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="w-10 h-10"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+				</svg>
+			</button>
+			<button
+				class="bg-white/70 rounded-full p-3 backdrop-blur-sm pointer-events-auto opacity-80 hover:opacity-100 transition-opacity duration-100"
+				on:click={() => {
+					playLevel($currentLevel, false);
+				}}
+				><svg
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					class="w-20 h-20 pl-2"
+				>
+					<path
+						fill-rule="evenodd"
+						d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+			</button>
+			<button
+				on:click={() => {
+					$currentLevel = Math.min(levels.length - 1, $currentLevel + 1);
+				}}
+				class="disabled:opacity-30 disabled:cursor-not-allowed pointer-events-auto hover:opacity-50 transition-opacity duration-100"
+				disabled={$currentLevel >= levels.length - 1}
+			>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+					class="w-10 h-10"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+				</svg>
+			</button>
 		</div>
 	</div>
 {/if}

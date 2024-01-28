@@ -53,6 +53,7 @@
     "tailwind-merge": "^2.2.0",
     "tailwind-variants": "^0.1.19",
     "three": "^0.159.0",
+    "three-inspect": "^0.4.3",
     "tweakpane": "^4.0.2"
   }
 }

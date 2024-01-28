@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { Euler, Group, Vector3 } from 'three';
-	import { T, useTask } from '@threlte/core';
+	import { T, useTask, useThrelte } from '@threlte/core';
 	import { RigidBody, Collider, CollisionGroups } from '@threlte/rapier';
 	import Controller from './CameraControls.svelte';
 
 	import { RigidBody as RapierRigidBody } from '@dimforge/rapier3d-compat';
 	import {
 		currentLevel,
-		showDebug,
 		playing,
 		playingTime,
 		playLevel,
@@ -21,16 +20,24 @@
 	import interact from 'interactjs';
 
 	import material from './materials/player';
+	import { Audio } from '@threlte/extras';
 
-	export let position: [number, number, number] = [0, 0, 0];
+	const { renderer } = useThrelte();
+
+	let position: [number, number, number] = [0, 0, 0];
 	position[1] += 2;
 
-	export let radius = 0.5;
-	export let speed = 35;
-	export let jumpForce = 25;
+	let radius = 0.5;
+	let speed = 35;
+	let jumpForce = 25;
 
-	export let linDrag = 0.95;
-	export let angDrag = 0.99;
+	let airDrag = 0.98;
+	let groundDrag = 0.96;
+
+	let airAcceleration = 0.5;
+	let groundAcceleration = 1;
+
+	let angDrag = 0.99;
 
 	let maxTimeAfterContact = 0.1;
 	let maxTimeBeforeContact = 0.1;
@@ -44,23 +51,31 @@
 
 	let up = 0;
 
-	const temp = new Vector3();
-
 	let grounded = false;
 
 	let playingLevel = $currentLevel;
 
-	function calculateMovement() {
-		return [leftMotion - rightMotion, up * jumpForce, forwardMotion - backwardMotion];
-	}
+	const temp = new Vector3();
+	const domElement = renderer.domElement;
+
+	const lock = () => domElement.requestPointerLock();
+
+	$: isPlaying = $page.state.gameState == 'playing' && $playing && ($playingTime > 0 || $canEdit);
 
 	useTask((delta) => {
+		let lastPlayingTime = $playingTime;
 		$playingTime += delta;
 
-		if ($page.state.gameState !== 'playing' && rigidBody) {
-			rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
-			rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
-			return;
+		if(lastPlayingTime < 0 && Math.floor($playingTime) != Math.floor(lastPlayingTime)) {
+			lock();
+
+			if($playingTime < -1.5) {
+				readySound.play();
+			} else if($playingTime < -0.5) {
+				setSound.play();
+			} else if($playingTime < 0.5) {
+				goSound.play();
+			}
 		}
 
 		if (grounded) {
@@ -84,8 +99,9 @@
 		const linVel = rigidBody.linvel();
 
 		// slow down
-		linVel.x *= linDrag;
-		linVel.z *= linDrag;
+		let drag = grounded ? groundDrag : airDrag;
+		linVel.x *= drag;
+		linVel.z *= drag;
 
 		// set velocity
 		rigidBody.setLinvel(linVel, true);
@@ -110,8 +126,15 @@
 		}
 	});
 
+	function calculateMovement() {
+		let acceleration = grounded ? groundAcceleration : airAcceleration;
+		return [(leftMotion - rightMotion) * acceleration, up * jumpForce, (forwardMotion - backwardMotion) * acceleration];
+	}
+
 	function die() {
-		if (isPlaying) playLevel($currentLevel);
+		if (isPlaying) {
+			playLevel($currentLevel);
+		}
 	}
 
 	function actualJump() {
@@ -119,6 +142,8 @@
 		pressedJump = 0;
 
 		up = 1;
+
+		if(jumpSound) jumpSound.play();
 	}
 
 	function jump() {
@@ -181,15 +206,10 @@
 			case 'd':
 				rightMotion = 0;
 				break;
-			case '1':
-				$showDebug = !$showDebug;
-				break;
 			default:
 				break;
 		}
 	}
-
-	$: isPlaying = $page.state.gameState == 'playing' && $playing && ($playingTime > 0 || $canEdit);
 
 	$: if (sphere) {
 		sphereRef = sphere;
@@ -213,12 +233,37 @@
 			jump();
 		});
 	});
+
+	function hitGround() {
+		grounded = true;
+
+		if(hitSound) hitSound.play();
+	}
+
+	function leaveGround() {
+		grounded = false;
+	}
+
+	let jumpSound: Audio;
+	let hitSound: Audio;
+
+	let readySound: Audio;
+	let setSound: Audio;
+	let goSound: Audio;
 </script>
 
 <svelte:window
 	on:keydown|preventDefault={onKeyDown}
 	on:keyup={onKeyUp}
 />
+
+<Audio src="/audio/jump2.ogg" bind:this={jumpSound}/>
+<Audio src="/audio/hit.ogg" bind:this={hitSound}/>
+
+<Audio src="/audio/ready.ogg" bind:this={readySound}/>
+<Audio src="/audio/set.ogg" bind:this={setSound}/>
+<Audio src="/audio/go.ogg" bind:this={goSound}/>
+
 
 <T.PerspectiveCamera makeDefault fov={90} far={500}>
 	<Controller bind:object={sphereRef} />
@@ -232,8 +277,8 @@
 				args={[radius + 0.02]}
 				density={100}
 				restitution={0.7}
-				on:collisionenter={() => (grounded = true)}
-				on:collisionexit={() => (grounded = false)}
+				on:collisionenter={hitGround}
+				on:collisionexit={leaveGround}
 			/>
 		</CollisionGroups>
 		<T.Mesh castShadow receiveShadow>

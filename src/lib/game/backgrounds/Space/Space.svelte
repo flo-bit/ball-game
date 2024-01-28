@@ -4,7 +4,7 @@
 	
 	import Stars from './Stars.svelte';
 	import { onMount } from 'svelte';
-	import PlanetModel from '../Sky/PlanetModel.svelte';
+	import PlanetModel from './PlanetModel.svelte';
 	import Nebula from './Nebula.svelte';
 
 	let rotation = 0;

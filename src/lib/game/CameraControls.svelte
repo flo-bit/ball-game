@@ -6,8 +6,10 @@
 
 	const { invalidate, renderer } = useThrelte();
 
+	import { playing } from '../gamestate';
+
 	export let object: Group | undefined;
-	export let rotateSpeed = 0.8;
+	export let rotateSpeed = 0.65;
 
 	export let idealOffset = { x: 0, y: 2, z: -3 };
 	export let idealLookAt = { x: 0, y: 1, z: 5 };
@@ -38,9 +40,6 @@
 
 	let isLocked = document.pointerLockElement === domElement;
 
-	export const lock = () => domElement.requestPointerLock();
-	export const unlock = () => document.exitPointerLock();
-
 	domElement.addEventListener('mousemove', onMouseMove);
 	domElement.ownerDocument.addEventListener('pointerlockchange', onPointerlockChange);
 	domElement.ownerDocument.addEventListener('pointerlockerror', onPointerlockError);
@@ -55,18 +54,17 @@
 		}
 	}
 
+	function onPointerlockError() {
+		console.error('PointerLockControls: Unable to use Pointer Lock API');
+		isLocked = false;
+	}
+
 	function onMouseMove(event: MouseEvent) {
 		const { movementX } = event;
 		if (!isLocked) return;
 		if (!$camera) return;
 
 		rotateCamera(movementX * rotateSpeed);
-
-		console.log(movementX);
-	}
-
-	function onPointerlockError() {
-		console.error('PointerLockControls: Unable to use Pointer Lock API');
 	}
 
 	useTask((delta) => {
@@ -108,41 +106,14 @@
 	function rotateCamera(angle: number) {
 		rotateDelta.x = angle;
 	}
-
-	function onKeyDown(event: KeyboardEvent) {
-		switch (event.key) {
-			case 'q':
-				rotateCamera(-2 * rotateSpeed);
-				break;
-			case 'e':
-				rotateCamera(2 * rotateSpeed);
-				break;
-
-			case 'l':
-				lock();
-				break;
-			default:
-				break;
-		}
-	}
-
-	function onKeyUp(event: KeyboardEvent) {
-		switch (event.key) {
-			case 'q':
-				rotateDelta.set(0, 0);
-				break;
-			case 'e':
-				rotateDelta.set(0, 0);
-				break;
-			default:
-				break;
-		}
-	}
 </script>
 
 <svelte:window
-	on:keydown={onKeyDown}
-	on:keyup={onKeyUp}
+	on:mousedown={() => {
+		if (domElement && $playing) {
+			domElement.requestPointerLock();
+		}
+	}}
 />
 	<!-- on:pointerdown={onPointerDown}
 	on:pointerleave={onPointerUp}

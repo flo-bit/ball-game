@@ -7,7 +7,7 @@
 
 {#await cloudTexture then value}
 	<Billboard {...$$restProps}>
-		<T.Mesh rotation.z={Math.random() * Math.PI * 2}>
+		<T.Mesh rotation.z={Math.random() * Math.PI * 2} >
 			<T.PlaneGeometry args={[1, 1]} />
 			<T.MeshBasicMaterial
 				map={value}

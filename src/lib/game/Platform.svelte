@@ -85,6 +85,9 @@
 		}
 	});
 
+	export const unlock = () => document.exitPointerLock();
+
+
 	function levelDone() {
 		let time = $playingTime;
 
@@ -107,6 +110,8 @@
 		});
 
 		$playing = false;
+
+		unlock();
 	}
 
 	export let hasPhysics = true;
