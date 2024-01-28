@@ -29,6 +29,8 @@
 	import Lines from '../helper/effects/Lines.svelte';
 	interactivity();
 
+	import material from './materials/marble'
+
 	export let scale: [number, number, number] = [1, 1, 1];
 	export let position: [number, number, number] = [0, 0, 0];
 	export let rotation: [number, number, number] | [number, number, number, THREE.EulerOrder] = [
@@ -57,6 +59,7 @@
 	}
 
 	let colors: Record<PlatformType, THREE.Color | string> = {
+		start: new THREE.Color(0xff0000),
 		win: new THREE.Color(0x7dd3fc),
 		normal: new THREE.Color(0xfafaf9),
 		force: new THREE.Color(0x10b981),
@@ -82,6 +85,9 @@
 		}
 	});
 
+	export const unlock = () => document.exitPointerLock();
+
+
 	function levelDone() {
 		let time = $playingTime;
 
@@ -104,6 +110,8 @@
 		});
 
 		$playing = false;
+
+		unlock();
 	}
 
 	export let hasPhysics = true;
@@ -222,6 +230,8 @@
 	>
 		<RoundedBoxGeometry args={[2, 2, 2]} radius={0.1} />
 		<T.MeshStandardMaterial {color} roughness={0.5} />
+		<!-- <T is={material} {color} /> -->
+
 	</T.Mesh>
 	{#if $page.state.gameState == 'edit' && $selectedPlatform == index}
 		<T.Mesh>

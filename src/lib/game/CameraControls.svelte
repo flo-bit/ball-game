@@ -4,20 +4,19 @@
 	import { Camera, Vector2, Vector3, Quaternion, Group } from 'three';
 	import { useThrelte, useParent, useTask } from '@threlte/core';
 
-	const { invalidate } = useThrelte();
+	const { invalidate, renderer } = useThrelte();
+
+	import { playing } from '../gamestate';
 
 	export let object: Group | undefined;
-	export let rotateSpeed = 1.0;
+	export let rotateSpeed = 0.65;
 
 	export let idealOffset = { x: 0, y: 2, z: -3 };
 	export let idealLookAt = { x: 0, y: 1, z: 5 };
 
 	const currentPosition = new Vector3();
 	const currentLookAt = new Vector3();
-	let pointerDown = false;
 
-	const rotateStart = new Vector2();
-	const rotateEnd = new Vector2();
 	const rotateDelta = new Vector2();
 
 	const axis = new Vector3(0, 1, 0);
@@ -32,6 +31,40 @@
 
 	if (!isCamera($camera)) {
 		throw new Error('Parent missing: <PointerLockControls> need to be a child of a <Camera>');
+	}
+	const domElement = renderer.domElement;
+
+	if (!renderer) {
+		throw new Error('Threlte Context missing: Is <PointerLockControls> a child of <Canvas>?');
+	}
+
+	let isLocked = document.pointerLockElement === domElement;
+
+	domElement.addEventListener('mousemove', onMouseMove);
+	domElement.ownerDocument.addEventListener('pointerlockchange', onPointerlockChange);
+	domElement.ownerDocument.addEventListener('pointerlockerror', onPointerlockError);
+
+	function onPointerlockChange() {
+		if (document.pointerLockElement === domElement) {
+			dispatch('lock');
+			isLocked = true;
+		} else {
+			dispatch('unlock');
+			isLocked = false;
+		}
+	}
+
+	function onPointerlockError() {
+		console.error('PointerLockControls: Unable to use Pointer Lock API');
+		isLocked = false;
+	}
+
+	function onMouseMove(event: MouseEvent) {
+		const { movementX } = event;
+		if (!isLocked) return;
+		if (!$camera) return;
+
+		rotateCamera(movementX * rotateSpeed);
 	}
 
 	useTask((delta) => {
@@ -56,6 +89,8 @@
 			$camera.position.copy(currentPosition);
 			$camera.lookAt(currentLookAt);
 		}
+
+		rotateDelta.x = 0;
 	});
 
 	function vectorFromObject(vec: { x: number; y: number; z: number }) {
@@ -71,49 +106,17 @@
 	function rotateCamera(angle: number) {
 		rotateDelta.x = angle;
 	}
-
-	function onPointerMove(event: PointerEvent) {
-		const { x, y } = event;
-		if (!pointerDown) return;
-
-		rotateEnd.set(x, y);
-		rotateCamera((rotateEnd.x - rotateStart.x) * rotateSpeed);
-		rotateStart.copy(rotateEnd);
-
-		invalidate();
-		dispatch('change');
-	}
-
-	function onPointerDown(event: PointerEvent) {
-		const { x, y } = event;
-		rotateStart.set(x, y);
-		pointerDown = true;
-	}
-
-	function onPointerUp() {
-		rotateDelta.set(0, 0);
-		pointerDown = false;
-	}
-
-	function onKeyDown(event: KeyboardEvent) {
-		switch (event.key) {
-			case 'q':
-				rotateCamera(-2 * rotateSpeed);
-				break;
-			case 'e':
-				rotateCamera(2 * rotateSpeed);
-				break;
-			default:
-				break;
-		}
-	}
 </script>
 
 <svelte:window
-	on:keydown={onKeyDown}
-	on:pointerdown={onPointerDown}
+	on:mousedown={() => {
+		if (domElement && $playing) {
+			domElement.requestPointerLock();
+		}
+	}}
+/>
+	<!-- on:pointerdown={onPointerDown}
 	on:pointerleave={onPointerUp}
 	on:pointerup={onPointerUp}
 	on:pointercancel={onPointerUp}
-	on:pointermove={onPointerMove}
-/>
+	on:pointermove={onPointerMove} -->

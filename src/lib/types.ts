@@ -12,7 +12,7 @@ export type GameState =
 	| 'gameHelp'
 	| 'settings';
 
-export type PlatformType = 'normal' | 'win' | 'force' | 'bounce' | 'slide';
+export type PlatformType = 'start' | 'normal' | 'win' | 'force' | 'bounce' | 'slide';
 
 export type Platform = {
 	position: [number, number, number];

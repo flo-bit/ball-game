@@ -1,18 +1,17 @@
 <script lang="ts">
-	import { Euler, Group, Vector3, MeshStandardMaterial } from 'three';
-	import { T, useTask } from '@threlte/core';
+	import { Euler, Group, Vector3 } from 'three';
+	import { T, useTask, useThrelte } from '@threlte/core';
 	import { RigidBody, Collider, CollisionGroups } from '@threlte/rapier';
 	import Controller from './CameraControls.svelte';
 
 	import { RigidBody as RapierRigidBody } from '@dimforge/rapier3d-compat';
 	import {
 		currentLevel,
-		showDebug,
 		playing,
 		playingTime,
 		playLevel,
 		canEdit,
-		playerPosition
+		playerPosition,
 	} from '../gamestate';
 	import { replaceState } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -20,13 +19,25 @@
 
 	import interact from 'interactjs';
 
-	export let position: [number, number, number] = [0, 5, 0];
-	export let radius = 0.5;
-	export let speed = 35;
-	export let jumpForce = 25;
+	import material from './materials/player';
+	import { Audio } from '@threlte/extras';
 
-	export let linDrag = 0.95;
-	export let angDrag = 0.99;
+	const { renderer } = useThrelte();
+
+	let position: [number, number, number] = [0, 0, 0];
+	position[1] += 2;
+
+	let radius = 0.5;
+	let speed = 35;
+	let jumpForce = 25;
+
+	let airDrag = 0.98;
+	let groundDrag = 0.96;
+
+	let airAcceleration = 0.5;
+	let groundAcceleration = 1;
+
+	let angDrag = 0.99;
 
 	let maxTimeAfterContact = 0.1;
 	let maxTimeBeforeContact = 0.1;
@@ -40,23 +51,31 @@
 
 	let up = 0;
 
-	const temp = new Vector3();
-
 	let grounded = false;
 
 	let playingLevel = $currentLevel;
 
-	function calculateMovement() {
-		return [leftMotion - rightMotion, up * jumpForce, forwardMotion - backwardMotion];
-	}
+	const temp = new Vector3();
+	const domElement = renderer.domElement;
+
+	const lock = () => domElement.requestPointerLock();
+
+	$: isPlaying = $page.state.gameState == 'playing' && $playing && ($playingTime > 0 || $canEdit);
 
 	useTask((delta) => {
+		let lastPlayingTime = $playingTime;
 		$playingTime += delta;
 
-		if ($page.state.gameState !== 'playing' && rigidBody) {
-			rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
-			rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
-			return;
+		if(lastPlayingTime < 0 && Math.floor($playingTime) != Math.floor(lastPlayingTime)) {
+			lock();
+
+			if($playingTime < -1.5) {
+				readySound.play();
+			} else if($playingTime < -0.5) {
+				setSound.play();
+			} else if($playingTime < 0.5) {
+				goSound.play();
+			}
 		}
 
 		if (grounded) {
@@ -80,8 +99,9 @@
 		const linVel = rigidBody.linvel();
 
 		// slow down
-		linVel.x *= linDrag;
-		linVel.z *= linDrag;
+		let drag = grounded ? groundDrag : airDrag;
+		linVel.x *= drag;
+		linVel.z *= drag;
 
 		// set velocity
 		rigidBody.setLinvel(linVel, true);
@@ -106,8 +126,15 @@
 		}
 	});
 
+	function calculateMovement() {
+		let acceleration = grounded ? groundAcceleration : airAcceleration;
+		return [(leftMotion - rightMotion) * acceleration, up * jumpForce, (forwardMotion - backwardMotion) * acceleration];
+	}
+
 	function die() {
-		if (isPlaying) playLevel($currentLevel);
+		if (isPlaying) {
+			playLevel($currentLevel);
+		}
 	}
 
 	function actualJump() {
@@ -115,6 +142,8 @@
 		pressedJump = 0;
 
 		up = 1;
+
+		if(jumpSound) jumpSound.play();
 	}
 
 	function jump() {
@@ -177,144 +206,16 @@
 			case 'd':
 				rightMotion = 0;
 				break;
-			case '1':
-				$showDebug = !$showDebug;
-				break;
 			default:
 				break;
 		}
 	}
-
-	const material = new MeshStandardMaterial();
-	material.onBeforeCompile = (shader) => {
-		const noiseFunction = `
-float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
-vec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
-vec4 perm(vec4 x){return mod289(((x * 34.0) + 1.0) * x);}
-
-float noise(vec3 p){
-	vec3 a = floor(p);
-	vec3 d = p - a;
-	d = d * d * (3.0 - 2.0 * d);
-
-	vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
-	vec4 k1 = perm(b.xyxy);
-	vec4 k2 = perm(k1.xyxy + b.zzww);
-
-	vec4 c = k2 + a.zzzz;
-	vec4 k3 = perm(c);
-	vec4 k4 = perm(c + 1.0);
-
-	vec4 o1 = fract(k3 * (1.0 / 41.0));
-	vec4 o2 = fract(k4 * (1.0 / 41.0));
-
-	vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
-	vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
-
-	return o4.y * d.y + o4.x * (1.0 - d.y);
-}
-vec3 marble(vec3 vPos) {
-    // More intricate warping for marble patterns
-    float warpFactor = 2.0;
-    vec3 warpedPos = vPos * warpFactor + noise(vPos * warpFactor * 0.5);
-	vec3 warpedPos2 = warpedPos * warpFactor * 0.3 + noise(warpedPos * warpFactor * 0.5 + vec3(0, 2, 4)) + vPos;
-
-    // Creating a rainbow-like color, warped by the noise
-    vec3 color = 0.75 + 0.25 * cos(6.2831 * warpedPos2 * noise(warpedPos) + warpedPos + vec3(0, 2, 4));
-
-	// make color more intense
-	color = color * color * 0.6;
-
-    // Modulate the color intensity based on the noise
-    float vein = noise(warpedPos2 * warpFactor);
-    color *= 0.7 + 0.2 * sin(vein * 12.0);
-
-    return color;
-}`;
-		shader.vertexShader = `varying vec3 vPos;\n${shader.vertexShader}`.replace(
-			`#include <begin_vertex>`,
-			`#include <begin_vertex>\nvPos = transformed;`
-		);
-
-		shader.fragmentShader = `varying vec3 vPos;\n${noiseFunction}\n${shader.fragmentShader}`;
-
-		shader.fragmentShader = shader.fragmentShader.replace(
-			'vec4 diffuseColor = vec4( diffuse, opacity );',
-			`vec4 diffuseColor = vec4(marble(vPos), opacity );`
-		);
-	};
-
-	// Variables to store initial orientation
-	let initialAlpha = 0,
-		initialBeta = 0,
-		initialGamma = 0;
-	let isCalibrated = false;
-
-	const minOrientationThreshold = 3;
-	const maxOrientationThreshold = 10;
-
-	// Function to handle device orientation event
-	function handleOrientation(event: DeviceOrientationEvent) {
-		if (!isCalibrated) {
-			// Calibrate the initial orientation
-			initialAlpha = event.alpha ?? 0;
-			initialBeta = event.beta ?? 0;
-			initialGamma = event.gamma ?? 0;
-			isCalibrated = true;
-		} else {
-			// Calculate relative orientation
-			const relativeAlpha = (event.alpha ?? 0) - initialAlpha;
-			const relativeBeta = (event.beta ?? 0) - initialBeta;
-			const relativeGamma = (event.gamma ?? 0) - initialGamma;
-
-			// Map the relative orientation to game controls
-			// Adjust these thresholds and mappings as needed for your game
-			if (relativeBeta < -minOrientationThreshold) {
-				forwardMotion =
-					(Math.abs(relativeBeta) - minOrientationThreshold) /
-					(maxOrientationThreshold - minOrientationThreshold);
-			} else {
-				forwardMotion = 0;
-			}
-			forwardMotion = Math.min(1, forwardMotion);
-
-			if (relativeBeta > minOrientationThreshold) {
-				backwardMotion =
-					(Math.abs(relativeBeta) - minOrientationThreshold) /
-					(maxOrientationThreshold - minOrientationThreshold);
-			} else {
-				backwardMotion = 0;
-			}
-			backwardMotion = Math.min(1, backwardMotion);
-
-			if (relativeGamma > minOrientationThreshold) {
-				rightMotion =
-					(Math.abs(relativeGamma) - minOrientationThreshold) /
-					(maxOrientationThreshold - minOrientationThreshold);
-			} else {
-				rightMotion = 0;
-			}
-			rightMotion = Math.min(1, rightMotion);
-
-			if (relativeGamma < -minOrientationThreshold) {
-				leftMotion =
-					(Math.abs(relativeGamma) - minOrientationThreshold) /
-					(maxOrientationThreshold - minOrientationThreshold);
-			} else {
-				leftMotion = 0;
-			}
-			leftMotion = Math.min(1, leftMotion);
-		}
-	}
-
-	$: isPlaying = $page.state.gameState == 'playing' && $playing && ($playingTime > 0 || $canEdit);
 
 	$: if (sphere) {
 		sphereRef = sphere;
 	}
 
 	$: if (playingLevel != $currentLevel) {
-		//isCalibrated = false;
 		playingLevel = $currentLevel;
 		if (rigidBody) {
 			rigidBody.setTranslation({ x: 0, y: 5, z: 0 }, true);
@@ -332,15 +233,39 @@ vec3 marble(vec3 vPos) {
 			jump();
 		});
 	});
+
+	function hitGround() {
+		grounded = true;
+
+		if(hitSound) hitSound.play();
+	}
+
+	function leaveGround() {
+		grounded = false;
+	}
+
+	let jumpSound: Audio;
+	let hitSound: Audio;
+
+	let readySound: Audio;
+	let setSound: Audio;
+	let goSound: Audio;
 </script>
 
 <svelte:window
 	on:keydown|preventDefault={onKeyDown}
 	on:keyup={onKeyUp}
-	on:deviceorientation={handleOrientation}
 />
 
-<T.PerspectiveCamera makeDefault fov={90}>
+<Audio src="/audio/jump2.ogg" bind:this={jumpSound}/>
+<Audio src="/audio/hit.ogg" bind:this={hitSound}/>
+
+<Audio src="/audio/ready.ogg" bind:this={readySound}/>
+<Audio src="/audio/set.ogg" bind:this={setSound}/>
+<Audio src="/audio/go.ogg" bind:this={goSound}/>
+
+
+<T.PerspectiveCamera makeDefault fov={90} far={500}>
 	<Controller bind:object={sphereRef} />
 </T.PerspectiveCamera>
 
@@ -352,8 +277,8 @@ vec3 marble(vec3 vPos) {
 				args={[radius + 0.02]}
 				density={100}
 				restitution={0.7}
-				on:collisionenter={() => (grounded = true)}
-				on:collisionexit={() => (grounded = false)}
+				on:collisionenter={hitGround}
+				on:collisionexit={leaveGround}
 			/>
 		</CollisionGroups>
 		<T.Mesh castShadow receiveShadow>
