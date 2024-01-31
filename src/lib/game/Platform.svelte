@@ -1,35 +1,22 @@
 <script lang="ts">
+	import * as THREE from 'three';
 	import { T, useTask } from '@threlte/core';
-	import { RoundedBoxGeometry, TransformControls } from '@threlte/extras';
-
-	// @ts-ignore
-	import type { TransformControls as TC } from 'three/examples/jsm/controls/TransformControls';
+	import { RoundedBoxGeometry } from '@threlte/extras';
 	import { Collider, CollisionGroups } from '@threlte/rapier';
 	import {
 		currentLevel,
-		customHighscores,
-		editMode,
-		editSpace,
+		gameState,
 		highscores,
-		platforms,
-		platformsHistory,
-		playingCustomLevel,
 		playingTime,
-		selectedPlatform,
-		showNewHighscore,
-		playing
-	} from '../gamestate';
-	import * as THREE from 'three';
+		showNewHighscore
+	} from '$lib/gamestate';
 
 	import { interactivity } from '@threlte/extras';
-	import { page } from '$app/stores';
-	import type { PlatformType } from '$lib/types';
-	import { replaceState } from '$app/navigation';
-	import type { RigidBody } from '@dimforge/rapier3d-compat';
-	import Lines from '../helper/effects/Lines.svelte';
-	interactivity();
+	import Lines from '$lib/helper/effects/Lines.svelte';
 
-	import material from './materials/marble'
+	import type { RigidBody } from '@dimforge/rapier3d-compat';
+	import type { PlatformType } from '$lib/types';
+	interactivity();
 
 	export let scale: [number, number, number] = [1, 1, 1];
 	export let position: [number, number, number] = [0, 0, 0];
@@ -37,29 +24,8 @@
 		0, 0, 0
 	];
 
-	let controls: TC;
-
-	let addedEventListener = false;
-
-	$: if (controls && $editMode) {
-		controls.mode = $editMode;
-		controls.setSpace($editSpace);
-
-		if (!addedEventListener) {
-			addedEventListener = true;
-			// @ts-ignore
-			controls.addEventListener('dragging-changed', (event) => {
-				if ($selectedPlatform != index) return;
-
-				if (event.value) {
-					$platformsHistory = [...$platformsHistory, window.structuredClone($platforms)];
-				}
-			});
-		}
-	}
-
 	let colors: Record<PlatformType, THREE.Color | string> = {
-		start: new THREE.Color(0xff0000),
+		start: new THREE.Color(0xd97706),
 		win: new THREE.Color(0x7dd3fc),
 		normal: new THREE.Color(0xfafaf9),
 		force: new THREE.Color(0x10b981),
@@ -69,47 +35,21 @@
 
 	export let type: PlatformType = 'normal';
 
-	export let index: number;
-
-	$: showTransform = $page.state.gameState == 'edit' && $selectedPlatform == index;
-
 	let ref: THREE.Object3D;
 
-	let pointerDown = false;
-
-	useTask(() => {
-		if ($selectedPlatform == index) {
-			position = ref.position.toArray() as [number, number, number];
-			scale = ref.scale.toArray() as [number, number, number];
-			rotation = ref.rotation.toArray() as [number, number, number];
-		}
-	});
-
 	export const unlock = () => document.exitPointerLock();
-
 
 	function levelDone() {
 		let time = $playingTime;
 
 		$showNewHighscore = false;
-		// check if new best time
-		if ($playingCustomLevel) {
-			if (!$customHighscores[$currentLevel] || $customHighscores[$currentLevel] > time) {
-				$customHighscores[$currentLevel] = time;
-				$showNewHighscore = true;
-			}
-		} else {
-			if (!$highscores[$currentLevel] || $highscores[$currentLevel] > time) {
-				$highscores[$currentLevel] = time;
-				$showNewHighscore = true;
-			}
+
+		if (!$highscores[$currentLevel] || $highscores[$currentLevel] > time) {
+			$highscores[$currentLevel] = time;
+			$showNewHighscore = true;
 		}
 
-		replaceState('', {
-			gameState: 'won'
-		});
-
-		$playing = false;
+		$gameState = 'won';
 
 		unlock();
 	}
@@ -124,34 +64,30 @@
 		forceHeight: 10
 	};
 
-	let applyForce: RigidBody | null = null;
+	let playerRigidBody: RigidBody | null = null;
 
-	let snap = false;
+	const vector = new THREE.Vector3(0, 1, 0);
+	const euler = new THREE.Euler(0, 0, 0, 'XYZ');
 
-	useTask(() => {
-		if (applyForce) {
-			const vector = new THREE.Vector3(0, 1, 0);
+	const { stop, start } = useTask(() => {
+		if (playerRigidBody) {
+			vector.set(0, 1, 0);
 			// rotate using rotation
-			vector.applyEuler(new THREE.Euler(rotation[0], rotation[1], rotation[2]));
-			applyForce.applyImpulse(vector.multiplyScalar(data?.forceAmount ?? 50), true);
+			euler.set(rotation[0], rotation[1], rotation[2]);
+			vector.applyEuler(euler);
+			playerRigidBody.applyImpulse(vector.multiplyScalar(data?.forceAmount ?? 0), true);
 		}
 	});
+
+	$: if (playerRigidBody) {
+		start();
+	} else {
+		stop();
+	}
 
 	$: color = type ? colors[type] : colors['normal'];
 </script>
 
-<svelte:window
-	on:keydown={(ev) => {
-		if (ev.key == 'Shift') {
-			snap = true;
-		}
-	}}
-	on:keyup={(ev) => {
-		if (ev.key == 'Shift') {
-			snap = false;
-		}
-	}}
-/>
 <T.Object3D {position} {scale} {rotation} bind:ref>
 	{#if type == 'win'}
 		{#if hasPhysics}
@@ -182,7 +118,7 @@
 				shape={'cuboid'}
 				args={[1, 1, 1]}
 				type="dynamic"
-				restitution={type == 'bounce' ? 2 : undefined}
+				restitution={type == 'bounce' ? 4 : undefined}
 				friction={type == 'slide' ? 0 : 10000}
 			/>
 		</CollisionGroups>
@@ -197,55 +133,18 @@
 					args={[1 - 0.04, data.forceHeight ?? 5, 1 - 0.04]}
 					type="dynamic"
 					sensor={true}
-					on:sensorenter={(test) => {
-						applyForce = test.targetRigidBody;
+					on:sensorenter={(player) => {
+						playerRigidBody = player.targetRigidBody;
 					}}
 					on:sensorexit={() => {
-						applyForce = null;
+						playerRigidBody = null;
 					}}
 				/>
 			</CollisionGroups>
 		</T.Object3D>
 	{/if}
-	<T.Mesh
-		receiveShadow
-		castShadow
-		on:pointerdown={() => {
-			pointerDown = true;
-		}}
-		on:pointerleave={() => {
-			pointerDown = false;
-		}}
-		on:pointerup={() => {
-			if (pointerDown) {
-				$selectedPlatform = index;
-			}
-		}}
-		on:pointercancel={() => {
-			pointerDown = false;
-		}}
-		on:pointerout={() => {
-			pointerDown = false;
-		}}
-	>
+	<T.Mesh receiveShadow castShadow>
 		<RoundedBoxGeometry args={[2, 2, 2]} radius={0.1} />
 		<T.MeshStandardMaterial {color} roughness={0.5} />
-		<!-- <T is={material} {color} /> -->
-
 	</T.Mesh>
-	{#if $page.state.gameState == 'edit' && $selectedPlatform == index}
-		<T.Mesh>
-			<RoundedBoxGeometry args={[2, 2, 2]} radius={0.1} />
-			<T.MeshStandardMaterial color={'green'} roughness={0.5} transparent={true} opacity={0.4} />
-		</T.Mesh>
-	{/if}
-	{#if showTransform}
-		<TransformControls
-			translationSnap={snap ? 1 : 0}
-			rotationSnap={snap ? Math.PI / 8 : 0}
-			scaleSnap={snap ? 0.1 : 0}
-			object={ref}
-			bind:controls
-		></TransformControls>
-	{/if}
 </T.Object3D>

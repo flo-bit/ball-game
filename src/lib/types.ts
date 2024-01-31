@@ -1,16 +1,6 @@
 import type { EulerOrder } from 'three';
 
-export type GameState =
-	| 'menu'
-	| 'levels'
-	| 'customLevels'
-	| 'playing'
-	| 'paused'
-	| 'won'
-	| 'edit'
-	| 'editHelp'
-	| 'gameHelp'
-	| 'settings';
+export type GameState = 'menu' | 'levels' | 'playing' | 'paused' | 'won' | 'help' | 'settings';
 
 export type PlatformType = 'start' | 'normal' | 'win' | 'force' | 'bounce' | 'slide';
 

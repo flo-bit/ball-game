@@ -1,56 +1,30 @@
 <script lang="ts">
-	import {
-		canEdit,
-		currentLevel,
-		customLevels,
-		levels,
-		platforms,
-		playingCustomLevel
-	} from '../gamestate';
+	import { currentLevel } from '../gamestate';
 
 	import Platform from './Platform.svelte';
 
 	import type { Platform as PlatformType } from '$lib/types';
+	import { levels } from '$lib/levels';
 
 	let levelPlatforms: PlatformType[] = [];
-	function setLevelPlatforms(edit: boolean, level: number, custom: boolean, platforms: PlatformType[]) {
-		if (edit) {
-			levelPlatforms = $platforms;
-			return;
-		}
-
-		if(level < 0) {
+	function setLevelPlatforms(level: number) {
+		if (level < 0 || level > levels.length - 1) {
 			levelPlatforms = [];
 			return;
 		}
-
-		if(custom) {
-			if(level > $customLevels.length - 1) {
-				levelPlatforms = [];
-				return;
-			}
-			console.log(level)
-			console.log($customLevels)
-			console.log($customLevels[level])
-			levelPlatforms = $customLevels[level].platforms;
-		} else {
-			if(level > levels.length - 1) {
-				levelPlatforms = [];
-				return;
-			}
-			levelPlatforms = levels[level].platforms;
-		}
+		levelPlatforms = levels[level].platforms;
 	}
 
-	$: setLevelPlatforms($canEdit, $currentLevel, $playingCustomLevel, $platforms);
+	$: setLevelPlatforms($currentLevel);
 </script>
 
-{#each levelPlatforms as platform, i}
-	<Platform
-		bind:scale={platform.scale}
-		bind:position={platform.position}
-		bind:rotation={platform.rotation}
-		index={i}
-		type={platform.type}
-	/>
-{/each}
+{#key $currentLevel}
+	{#each levelPlatforms as platform}
+		<Platform
+			bind:scale={platform.scale}
+			bind:position={platform.position}
+			bind:rotation={platform.rotation}
+			type={platform.type}
+		/>
+	{/each}
+{/key}
